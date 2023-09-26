@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 
-export const statusRouter = createTRPCRouter({
+export const questionRouter = createTRPCRouter({
   submit: privateProcedure
     .input(z.object({code: z.string().max(512)}))
     .query(() => {
