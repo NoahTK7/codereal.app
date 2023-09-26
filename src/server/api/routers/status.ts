@@ -5,7 +5,6 @@ export const statusRouter = createTRPCRouter({
     .query(() => {
       return {
         numAnswered: 3,
-        nextQuestionTs: new Date()
       }
     }),
   personal: privateProcedure

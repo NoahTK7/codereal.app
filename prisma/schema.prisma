@@ -1,5 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Prisma schema file
+// Learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
     provider = "prisma-client-js"
@@ -11,11 +11,44 @@ datasource db {
     relationMode = "prisma"
 }
 
-model Example {
-    id        Int      @id @default(autoincrement())
-    name      String
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
+model Question {
+    id          Int          @id @default(autoincrement())
+    startsAt    DateTime
+    endsAt      DateTime
+    description String
+    funcSig     String
+    submissions Submission[]
+    startEvents StartEvent[]
+}
 
-    @@index([name])
+model Submission {
+    id         Int              @id @default(autoincrement())
+    authorId   String
+    question   Question         @relation(fields: [questionId], references: [id])
+    questionId Int
+    runResult  SubmissionResult
+    score      Int
+    codeLength Int
+    solveTime  Int
+    execTime   Int
+    code       String
+    createdAt  DateTime         @default(now())
+
+    @@index([questionId, authorId])
+}
+
+enum SubmissionResult {
+    PASSED
+    FAILED
+    TIMEOUT
+}
+
+model StartEvent {
+    id         Int      @id @default(autoincrement())
+    authorId   String
+    question   Question @relation(fields: [questionId], references: [id])
+    questionId Int
+    createdAt  DateTime @default(now())
+
+    @@index([questionId, authorId])
 }
