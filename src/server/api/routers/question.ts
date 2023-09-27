@@ -4,7 +4,7 @@ import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 export const questionRouter = createTRPCRouter({
   submit: privateProcedure
     .input(z.object({code: z.string().max(512)}))
-    .query(() => {
+    .mutation(() => {
       return {
         result: "SUCCESS",
         score: 456
@@ -13,8 +13,14 @@ export const questionRouter = createTRPCRouter({
   get: privateProcedure
     .query(() => {
       return {
-        questionDescription: "add 2 numbers",
+        questionDescription: "Your task is to write a function, sum, that takes two integers, a and b, and returns their sum.",
         funcSignature: "function sum(a, b)"
+      }
+    }),
+  start: privateProcedure
+    .mutation(() => {
+      return {
+        result: true
       }
     })
 });

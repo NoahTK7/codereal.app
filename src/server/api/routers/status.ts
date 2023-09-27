@@ -8,11 +8,16 @@ export const statusRouter = createTRPCRouter({
       }
     }),
   personal: privateProcedure
-    .query(({ ctx }) => {
+    .query(() => {
       return {
-        userId: ctx.userId,
-        isCompleted: false,
-        isStarted: false
+        completed: {
+          status: false,
+          submissionId: -1
+        },
+        started: {
+          status: true,
+          startTime: new Date()
+        }
       }
     })
 });

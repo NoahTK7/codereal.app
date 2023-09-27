@@ -1,7 +1,13 @@
+@import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 body {
   overscroll-behavior: none;
+}
+
+.ͼ1.cm-focused {
+  outline: none !important;
 }
