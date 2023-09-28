@@ -3,7 +3,10 @@ import { javascript } from '@codemirror/lang-javascript';
 import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac'
 import { useState } from "react";
 import { PageLayout } from "~/components/PageLayout";
-import { type RouterOutputs, api } from "~/utils/api";
+import { api } from "~/utils/api";
+import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
+import type { PersonalStatusData } from "~/server/api/routers/status";
+import { LoadingSpinner } from "~/components/loading";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 const extensions = [javascript()]
@@ -25,9 +28,26 @@ const Description = () => {
   )
 }
 
+type SubmissionProps = {
+  id: number
+}
+const Submission = ({ id }: SubmissionProps) => {
+  const { data, isLoading, isError } = api.submission.get.useQuery({ id })
+
+  if (isLoading) return <LoadingSpinner />
+
+  if (isError) return <p>There was an error retrieving your submission.</p>
+
+  return (
+    <div>
+      {JSON.stringify(data)}
+    </div>
+  )
+}
+
 const Question = () => {
   const { data, isLoading, isError } = api.question.get.useQuery()
-  const { mutate: submitQuestion, isLoading: submitting } = api.question.submit.useMutation({
+  const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
       void ctx.status.personal.invalidate()
     },
@@ -72,7 +92,6 @@ const Question = () => {
   )
 }
 
-type PersonalStatusData = RouterOutputs["status"]["personal"]
 const ChallengeHandler = (props: PersonalStatusData) => {
   const ctx = api.useContext()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
@@ -91,8 +110,8 @@ const ChallengeHandler = (props: PersonalStatusData) => {
         <p>You&apos;ve already completed today&apos;s challenge!</p>
         {props.completed.submissionId
           // TODO: display submission component
-          ? <p>Submission id: {props.completed.submissionId}</p>
-          : <p>There was an error retrieving your submission</p>}
+          ? <Submission id={props.completed.submissionId} />
+          : <p>There was an error retrieving your submission.</p>}
       </>
     )
   }
@@ -101,9 +120,9 @@ const ChallengeHandler = (props: PersonalStatusData) => {
     return (
       <div className="px-2 py-2 space-y-4">
         <p className="text-large font-mono font-bold">Today&apos;s Challenge</p>
+        <Question />
         {/* TODO: counter/time that counts up from start time in real time */}
         {props.started.startTime && <p>Elapsed time: {props.started.startTime.toISOString()}</p>}
-        <Question />
       </div>
     )
   }
@@ -122,7 +141,7 @@ const ChallengeHandler = (props: PersonalStatusData) => {
   )
 }
 
-export default function Home() {
+const SignedInHome = () => {
   const {
     data: personalStatusData,
     isLoading: isPersonalStatusLoading,
@@ -130,13 +149,33 @@ export default function Home() {
   } = api.status.personal.useQuery()
   return (
     <>
+      {isPersonalStatusError && <p>Could not connect to backend service.</p>}
+      {isPersonalStatusLoading && <p>Connecting to backend service...</p>}
+      {personalStatusData && <ChallengeHandler {...personalStatusData} />}
+    </>
+  )
+}
+
+export default function Home() {
+
+  return (
+    <>
       <PageLayout>
-        <div className="grid grid-cols-1 px-4 lg:px-16 py-4 lg:py-8 space-y-4">
+        <div className="px-4 lg:px-16 py-4 lg:py-8 space-y-4">
           <Description />
           <hr />
-          {isPersonalStatusError && <p>Could not connect to backend service.</p>}
-          {isPersonalStatusLoading && <p>Connecting to backend service...</p>}
-          {personalStatusData && <ChallengeHandler {...personalStatusData} />}
+          <SignedIn>
+            <SignedInHome />
+          </SignedIn>
+          <SignedOut>
+            <div className="px-2 py-2 space-y-4">
+              <p>Sign in to get started!</p>
+              <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
+                <SignInButton />
+              </div>
+
+            </div>
+          </SignedOut>
         </div>
       </PageLayout>
     </>

@@ -30,8 +30,6 @@ export const userRouter = createTRPCRouter({
         }
         return filterUserForClient(user)
       }
-
       return filterUserForClient(user);
-
     }),
 });

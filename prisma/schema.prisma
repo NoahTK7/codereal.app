@@ -12,18 +12,24 @@ datasource db {
 }
 
 model Question {
-    id          Int          @id @default(autoincrement())
+    id Int @id @default(autoincrement())
+
     startsAt    DateTime
     endsAt      DateTime
-    description String
-    funcSig     String
+    description String       @db.VarChar(511)
+    funcSig     String       @db.VarChar(63)
     submissions Submission[]
     startEvents StartEvent[]
+
+    // TODO: index on timestamps?
+    @@index([id])
 }
 
 model Submission {
-    id         Int              @id @default(autoincrement())
-    authorId   String
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+
+    authorId   String           @db.VarChar(255)
     question   Question         @relation(fields: [questionId], references: [id])
     questionId Int
     runResult  SubmissionResult
@@ -31,8 +37,7 @@ model Submission {
     codeLength Int
     solveTime  Int
     execTime   Int
-    code       String
-    createdAt  DateTime         @default(now())
+    code       String           @db.VarChar(511)
 
     @@index([questionId, authorId])
 }
@@ -44,11 +49,12 @@ enum SubmissionResult {
 }
 
 model StartEvent {
-    id         Int      @id @default(autoincrement())
-    authorId   String
+    id        Int      @id @default(autoincrement())
+    createdAt DateTime @default(now())
+
+    authorId   String   @db.VarChar(255)
     question   Question @relation(fields: [questionId], references: [id])
     questionId Int
-    createdAt  DateTime @default(now())
 
     @@index([questionId, authorId])
 }

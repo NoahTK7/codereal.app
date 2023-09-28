@@ -61,7 +61,7 @@ export const PageLayout = (props: PropsWithChildren) => {
           </div>
         </nav>
 
-        <main className="flex-grow">
+        <main className="flex-grow lg:w-3/4">
           {props.children}
         </main>
 

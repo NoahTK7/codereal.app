@@ -3,15 +3,17 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/ap
 export const statisticsRouter = createTRPCRouter({
   global: publicProcedure
     .query(() => {
+      // TODO
       return {
         topFive: [
-          {username: "user1", score: 500},
-          {username: "user2", score: 400},
+          { username: "user1", score: 500 },
+          { username: "user2", score: 400 },
         ]
       }
     }),
   personal: privateProcedure
     .query(() => {
+      // TODO
       return {
         totalAnswered: 3,
         highScore: 500
