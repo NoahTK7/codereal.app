@@ -28,7 +28,9 @@ const Account = () => {
 }
 
 export const PageLayout = (props: PropsWithChildren) => {
-  const globalStatus = api.status.global.useQuery()
+  const globalStatus = api.status.global.useQuery(undefined, {
+    staleTime: 1000 * 60 // 1 minute
+  })
 
   return (
     <>

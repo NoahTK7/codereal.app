@@ -11,6 +11,15 @@ import { LoadingSpinner } from "~/components/loading";
 // eslint-disable-next-line @typescript-eslint/no-unsafe-call
 const extensions = [javascript()]
 
+// TODO: invalidate queries when question changes (e.g. at midnight UTC?)
+const noRefreshOpts = {
+  refetchOnMount: false,
+  refetchOnWindowFocus: false,
+  refetchOnReconnect: false,
+  retry: 2,
+  staleTime: 1000 * 60 * 60 // 1 hour
+}
+
 const Description = () => {
   return (
     <div className="grid grid-cols-1 px-2 py-2 space-y-4">
@@ -32,7 +41,7 @@ type SubmissionProps = {
   id: number
 }
 const Submission = ({ id }: SubmissionProps) => {
-  const { data, isLoading, isError } = api.submission.get.useQuery({ id })
+  const { data, isLoading, isError } = api.submission.get.useQuery({ id }, noRefreshOpts)
 
   if (isLoading) return <LoadingSpinner />
 
@@ -46,7 +55,7 @@ const Submission = ({ id }: SubmissionProps) => {
 }
 
 const Question = () => {
-  const { data, isLoading, isError } = api.question.get.useQuery()
+  const { data, isLoading, isError } = api.question.get.useQuery(undefined, noRefreshOpts)
   const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
       void ctx.status.personal.invalidate()
@@ -146,14 +155,13 @@ const SignedInHome = () => {
     data: personalStatusData,
     isLoading: isPersonalStatusLoading,
     isError: isPersonalStatusError
-  } = api.status.personal.useQuery()
-  return (
-    <>
-      {isPersonalStatusError && <p>Could not connect to backend service.</p>}
-      {isPersonalStatusLoading && <p>Connecting to backend service...</p>}
-      {personalStatusData && <ChallengeHandler {...personalStatusData} />}
-    </>
-  )
+  } = api.status.personal.useQuery(undefined, noRefreshOpts)
+
+  if (isPersonalStatusError) return <p>Could not connect to backend service.</p>
+
+  if (isPersonalStatusLoading) return <p>Connecting to backend service...</p>
+
+  return <ChallengeHandler {...personalStatusData} />
 }
 
 export default function Home() {

@@ -17,6 +17,7 @@ export const statusRouter = createTRPCRouter({
     .query(() => {
       // TODO
       return {
+        // TODO: add time til next question (?)
         numAnswered: 3,
       }
     }),
