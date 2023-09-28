@@ -43,8 +43,9 @@ model Submission {
 }
 
 enum SubmissionResult {
-    PASSED
-    FAILED
+    CORRECT
+    INCORRECT
+    ERROR
     TIMEOUT
 }
 

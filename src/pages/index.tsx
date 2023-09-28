@@ -12,6 +12,7 @@ import { LoadingSpinner } from "~/components/loading";
 const extensions = [javascript()]
 
 // TODO: invalidate queries when question changes (e.g. at midnight UTC?)
+// TODO: revisit desired refetch behavior
 const noRefreshOpts = {
   refetchOnMount: false,
   refetchOnWindowFocus: false,
@@ -47,9 +48,51 @@ const Submission = ({ id }: SubmissionProps) => {
 
   if (isError) return <p>There was an error retrieving your submission.</p>
 
+  const statusColors = {
+    ERROR: "text-amber-700",
+    TIMEOUT: "text-amber-700",
+    INCORRECT: "text-yellow-400",
+    CORRECT: "text-emerald-600",
+  };
+  const statusColor = statusColors[data.runResult] || "";
+
   return (
-    <div>
-      {JSON.stringify(data)}
+    <div className="space-y-4 py-4">
+      <p className="space-x-2"><span className="text-xl">Question #{data.questionId}</span> <span className={"text-md " + statusColor}>({data.runResult})</span></p>
+      <div className="mx-auto mt-4.5 mb-5.5 grid max-w-94 grid-cols-2 xl:grid-cols-4 rounded-md border border-stroke py-2.5 shadow-1">
+        <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 xsm:flex-row">
+          <span className="font-semibold text-black">
+            {data.score}
+          </span>
+          <span className="text-sm">Score</span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-1 xl:border-r border-stroke px-4 xsm:flex-row">
+          <span className="font-semibold text-black">
+            {data.execTime}ms
+          </span>
+          <span className="text-sm">Runtime</span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 xsm:flex-row">
+          <span className="font-semibold text-black">
+            {data.solveTime / 1000}s
+          </span>
+          <span className="text-sm">Solve time</span>
+        </div>
+        <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
+          <span className="font-semibold text-black dark:text-white">
+            {data.codeLength}
+          </span>
+          <span className="text-sm">Code length</span>
+        </div>
+      </div>
+      <ReactCodeMirror
+        readOnly={true}
+        editable={false}
+        value={data.code + "\n"}
+        extensions={extensions}
+        theme={noctisLilac}
+        className="shadow-xl my-4"
+      />
     </div>
   )
 }

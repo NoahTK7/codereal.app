@@ -49,7 +49,7 @@ type CodeExecutionResult = {
 }
 const executeCode = (_questionId: number, _code: string) => {
   return {
-    runResult: SubmissionResult.PASSED,
+    runResult: SubmissionResult.CORRECT,
     score: 456,
     codeLength: 23,
     solveTime: 7135,
