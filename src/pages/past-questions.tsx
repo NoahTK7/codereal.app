@@ -1,6 +1,7 @@
 import React from "react";
 import { noRefreshOpts } from "~/components/constants";
 import { PageLayout } from "~/components/layout";
+import { LoadingSpinner } from "~/components/loading";
 import { Submission } from "~/components/submission";
 import { api } from "~/utils/api";
 
@@ -8,42 +9,47 @@ const SubmissionsList = () => {
   const {
     data,
     error,
+    isLoading,
     fetchNextPage,
     hasNextPage,
     isFetching,
     isFetchingNextPage,
-    status,
-  } = api.submission.getInfinite.useInfiniteQuery({}, {
+  } = api.submission.getInfinite.useInfiniteQuery({
+    limit: 2
+  }, {
     getNextPageParam: (lastPage, _pages) => lastPage.nextCursor,
     ...noRefreshOpts
   })
 
-  return status === 'loading' ? (
-    <p>Loading...</p>
-  ) : status === 'error' ? (
-    <p>Error: {error.message}</p>
-  ) : (
+  if (error) return <p>Could not load past submissions.</p>
+
+  if (isLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
+
+  return (
     <>
       {data.pages.map((group, i) => (
         <React.Fragment key={i}>
           {group.submissions.map((submission, i) => (
-            <Submission key={i} {...submission} />
+            <div key={i} >
+              <hr />
+              <Submission {...submission} />
+            </div>
           ))}
         </React.Fragment>
-      ))}
-      <div>
+      ))
+      }
+      <div className="flex justify-center">
         <button
           onClick={() => void fetchNextPage()}
           disabled={!hasNextPage || isFetchingNextPage}
         >
-          {isFetchingNextPage
+          {isFetchingNextPage || isFetching
             ? 'Loading more...'
             : hasNextPage
               ? 'Load More'
               : 'Nothing more to load'}
         </button>
       </div>
-      <div>{isFetching && !isFetchingNextPage ? 'Fetching...' : null}</div>
     </>
   )
 }

@@ -41,12 +41,13 @@ export const submissionRouter = createTRPCRouter({
   getInfinite: privateProcedure
     .input(
       z.object({
+        limit: z.number().min(1).max(20).nullish(),
         cursor: z.number().nullish()
       }),
     )
     .query(async ({ ctx, input }) => {
-      const limit = 10;
-      const { cursor } = input;
+      const limit = input.limit ?? 10
+      const { cursor } = input
       const submissions = await ctx.db.submission.findMany({
         take: limit + 1, // take an extra at end to use as next cursor
         where: {
