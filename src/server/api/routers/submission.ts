@@ -5,7 +5,7 @@ import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
 
 export const submissionRouter = createTRPCRouter({
-  get: privateProcedure
+  getById: privateProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const submission = await ctx.db.submission.findFirstOrThrow({
@@ -37,6 +37,35 @@ export const submissionRouter = createTRPCRouter({
         console.error("submissionRouter/submit", e)
         return new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
+    }),
+  getInfinite: privateProcedure
+    .input(
+      z.object({
+        cursor: z.number().nullish()
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = 10;
+      const { cursor } = input;
+      const submissions = await ctx.db.submission.findMany({
+        take: limit + 1, // take an extra at end to use as next cursor
+        where: {
+          authorId: ctx.userId
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          id: 'desc',
+        },
+      })
+      let nextCursor: typeof cursor | undefined = undefined
+      if (submissions.length > limit) {
+        const nextItem = submissions.pop()
+        nextCursor = nextItem!.id
+      }
+      return {
+        submissions,
+        nextCursor,
+      };
     }),
 });
 

@@ -14,13 +14,9 @@ export const questionRouter = createTRPCRouter({
       if (question == null) throw new TRPCError({ code: "NOT_FOUND" })
 
       return {
+        id: question.id,
         questionDescription: question.description,
         funcSignature: question.funcSig
-      }
-      // TODO
-      return {
-        questionDescription: "Your task is to write a function, sum, that takes two integers, a and b, and returns their sum.",
-        funcSignature: "function sum(a, b)"
       }
     }),
   start: privateProcedure

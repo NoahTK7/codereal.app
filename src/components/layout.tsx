@@ -4,8 +4,6 @@ import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { api } from "~/utils/api";
 
-const pages = ["About", "Previous Questions"]
-
 const Account = () => {
   return (
     <>
@@ -49,9 +47,7 @@ export const PageLayout = (props: PropsWithChildren) => {
                   <Link href="/" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-xl font-large font-mono font-bold" >CodeReal</Link>
                 </div>
                 <div className="flex space-x-4 items-center">
-                  {pages.map((val, index) => (
-                    <Link key={index} href="#" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">{val}</Link>
-                  ))}
+                  <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
@@ -64,7 +60,9 @@ export const PageLayout = (props: PropsWithChildren) => {
         </nav>
 
         <main className="flex-grow lg:w-3/4">
-          {props.children}
+          <div className="px-4 lg:px-16 py-4 lg:py-8 space-y-4">
+            {props.children}
+          </div>
         </main>
 
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">

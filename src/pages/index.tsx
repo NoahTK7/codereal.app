@@ -1,25 +1,11 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
-import { javascript } from '@codemirror/lang-javascript';
-import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac'
 import { useState } from "react";
-import { PageLayout } from "~/components/PageLayout";
-import { api } from "~/utils/api";
+import { PageLayout } from "~/components/layout";
+import { type RouterOutputs, api } from "~/utils/api";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
-import type { PersonalStatusData } from "~/server/api/routers/status";
 import { LoadingSpinner } from "~/components/loading";
-
-// eslint-disable-next-line @typescript-eslint/no-unsafe-call
-const extensions = [javascript()]
-
-// TODO: invalidate queries when question changes (e.g. at midnight UTC?)
-// TODO: revisit desired refetch behavior
-const noRefreshOpts = {
-  refetchOnMount: false,
-  refetchOnWindowFocus: false,
-  refetchOnReconnect: false,
-  retry: 2,
-  staleTime: 1000 * 60 * 60 // 1 hour
-}
+import { codeEditorExtensions, codeEditorTheme, noRefreshOpts } from "~/components/constants";
+import { Submission } from "~/components/submission";
 
 const Description = () => {
   return (
@@ -38,63 +24,15 @@ const Description = () => {
   )
 }
 
-type SubmissionProps = {
-  id: number
-}
-const Submission = ({ id }: SubmissionProps) => {
-  const { data, isLoading, isError } = api.submission.get.useQuery({ id }, noRefreshOpts)
+type SubmissionDisplayProps = { id: number }
+const SubmissionDisplay = ({ id }: SubmissionDisplayProps) => {
+  const { data, isLoading, isError } = api.submission.getById.useQuery({ id }, noRefreshOpts)
 
   if (isLoading) return <LoadingSpinner />
 
   if (isError) return <p>There was an error retrieving your submission.</p>
 
-  const statusColors = {
-    ERROR: "text-amber-700",
-    TIMEOUT: "text-amber-700",
-    INCORRECT: "text-yellow-400",
-    CORRECT: "text-emerald-600",
-  };
-  const statusColor = statusColors[data.runResult] || "";
-
-  return (
-    <div className="space-y-4 py-4">
-      <p className="space-x-2"><span className="text-xl">Question #{data.questionId}</span> <span className={"text-md " + statusColor}>({data.runResult})</span></p>
-      <div className="mx-auto mt-4.5 mb-5.5 grid max-w-94 grid-cols-2 xl:grid-cols-4 rounded-md border border-stroke py-2.5 shadow-1">
-        <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 xsm:flex-row">
-          <span className="font-semibold text-black">
-            {data.score}
-          </span>
-          <span className="text-sm">Score</span>
-        </div>
-        <div className="flex flex-col items-center justify-center gap-1 xl:border-r border-stroke px-4 xsm:flex-row">
-          <span className="font-semibold text-black">
-            {data.execTime}ms
-          </span>
-          <span className="text-sm">Runtime</span>
-        </div>
-        <div className="flex flex-col items-center justify-center gap-1 border-r border-stroke px-4 xsm:flex-row">
-          <span className="font-semibold text-black">
-            {data.solveTime / 1000}s
-          </span>
-          <span className="text-sm">Solve time</span>
-        </div>
-        <div className="flex flex-col items-center justify-center gap-1 px-4 xsm:flex-row">
-          <span className="font-semibold text-black dark:text-white">
-            {data.codeLength}
-          </span>
-          <span className="text-sm">Code length</span>
-        </div>
-      </div>
-      <ReactCodeMirror
-        readOnly={true}
-        editable={false}
-        value={data.code + "\n"}
-        extensions={extensions}
-        theme={noctisLilac}
-        className="shadow-xl my-4"
-      />
-    </div>
-  )
+  return <Submission {...data} />
 }
 
 const Question = () => {
@@ -102,6 +40,7 @@ const Question = () => {
   const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
       void ctx.status.personal.invalidate()
+      void ctx.submission.invalidate()
     },
     onError: () => {
       // TODO: send error toast
@@ -119,14 +58,15 @@ const Question = () => {
 
   return (
     <div>
+      <p className="text-xl">Question #{data.id}</p>
       <p>{data.questionDescription}</p>
 
       <ReactCodeMirror
         value={code}
-        extensions={extensions}
+        extensions={codeEditorExtensions}
         autoFocus={true}
         readOnly={submitting}
-        theme={noctisLilac}
+        theme={codeEditorTheme}
         onChange={(value, _update) => {
           setCode(value)
         }}
@@ -144,7 +84,8 @@ const Question = () => {
   )
 }
 
-const ChallengeHandler = (props: PersonalStatusData) => {
+type ChallengeHandlerProps = RouterOutputs['status']['personal']
+const ChallengeHandler = (props: ChallengeHandlerProps) => {
   const ctx = api.useContext()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
     onSuccess: () => {
@@ -162,7 +103,7 @@ const ChallengeHandler = (props: PersonalStatusData) => {
         <p>You&apos;ve already completed today&apos;s challenge!</p>
         {props.completed.submissionId
           // TODO: display submission component
-          ? <Submission id={props.completed.submissionId} />
+          ? <SubmissionDisplay id={props.completed.submissionId} />
           : <p>There was an error retrieving your submission.</p>}
       </>
     )
@@ -207,27 +148,25 @@ const SignedInHome = () => {
   return <ChallengeHandler {...personalStatusData} />
 }
 
-export default function Home() {
+export default function HomePage() {
 
   return (
     <>
       <PageLayout>
-        <div className="px-4 lg:px-16 py-4 lg:py-8 space-y-4">
-          <Description />
-          <hr />
-          <SignedIn>
-            <SignedInHome />
-          </SignedIn>
-          <SignedOut>
-            <div className="px-2 py-2 space-y-4">
-              <p>Sign in to get started!</p>
-              <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
-                <SignInButton />
-              </div>
-
+        <Description />
+        <hr />
+        <SignedIn>
+          <SignedInHome />
+        </SignedIn>
+        <SignedOut>
+          <div className="px-2 py-2 space-y-4">
+            <p>Sign in to get started!</p>
+            <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
+              <SignInButton />
             </div>
-          </SignedOut>
-        </div>
+
+          </div>
+        </SignedOut>
       </PageLayout>
     </>
   );

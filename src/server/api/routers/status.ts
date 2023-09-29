@@ -1,7 +1,7 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
 
-export type PersonalStatusData = {
+type PersonalStatusData = {
   started: {
     status: boolean,
     startTime: Date | null
