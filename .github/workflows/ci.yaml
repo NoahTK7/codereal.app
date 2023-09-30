@@ -19,6 +19,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Copy env variables
+        run: cp .env.example .env
+
       - name: Lint
         run: npm run lint
 

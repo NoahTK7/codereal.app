@@ -28,7 +28,7 @@ type SubmissionDisplayProps = { id: number }
 const SubmissionDisplay = ({ id }: SubmissionDisplayProps) => {
   const { data, isLoading, isError } = api.submission.getById.useQuery({ id }, noRefreshOpts)
 
-  if (isLoading) return <LoadingSpinner />
+  if (isLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
 
   if (isError) return <p>There was an error retrieving your submission.</p>
 
@@ -143,7 +143,7 @@ const SignedInHome = () => {
 
   if (isPersonalStatusError) return <p>Could not connect to backend service.</p>
 
-  if (isPersonalStatusLoading) return <p>Connecting to backend service...</p>
+  if (isPersonalStatusLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
 
   return <ChallengeHandler {...personalStatusData} />
 }
@@ -164,7 +164,6 @@ export default function HomePage() {
             <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
               <SignInButton />
             </div>
-
           </div>
         </SignedOut>
       </PageLayout>

@@ -35,7 +35,9 @@ export const PageLayout = (props: PropsWithChildren) => {
       <Head>
         <title>CodeReal</title>
         <meta name="description" content="CodeReal, created by Noah Kurrack" />
+        {/* TODO: fix favicon */}
         <link rel="icon" href="/favicon.ico" />
+        {/* TODO: add more metadata, specifically opengraph vals */}
       </Head>
 
       <div className="flex flex-col min-h-screen">

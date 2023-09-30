@@ -49,6 +49,7 @@ const SubmissionsList = () => {
               ? 'Load More'
               : 'Nothing more to load'}
         </button>
+        {/* TODO: display spinner instead of button when fetching; hiden when no more to load */}
       </div>
     </>
   )
