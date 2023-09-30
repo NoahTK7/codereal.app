@@ -15,10 +15,9 @@ type PersonalStatusData = {
 export const statusRouter = createTRPCRouter({
   global: publicProcedure
     .query(() => {
-      // TODO
       return {
         // TODO: add time til next question (?)
-        numAnswered: 3,
+        numAnswered: 3, // TODO
       }
     }),
   personal: privateProcedure

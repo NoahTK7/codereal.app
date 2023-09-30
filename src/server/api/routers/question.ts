@@ -13,6 +13,7 @@ export const questionRouter = createTRPCRouter({
 
       if (question == null) throw new TRPCError({ code: "NOT_FOUND" })
 
+      // TODO just return question db record
       return {
         id: question.id,
         questionDescription: question.description,
@@ -21,6 +22,7 @@ export const questionRouter = createTRPCRouter({
     }),
   start: privateProcedure
     .mutation(async ({ ctx }) => {
+      // TODO check if already started
       try {
         const startEvent = await ctx.db.startEvent.create({
           data: {

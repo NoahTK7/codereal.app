@@ -1,8 +1,8 @@
-import { SubmissionResult } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
+import { executeRouter } from "~/server/api/executeRouter";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
@@ -19,13 +19,19 @@ export const submissionRouter = createTRPCRouter({
     .input(z.object({ code: z.string().max(512) }))
     .mutation(async ({ ctx, input }) => {
       const currentQuestion = getCurrentQuestion()
-      const execResult = executeCode(currentQuestion, input.code)
+
+      // TODO check if already submitted
+
+      const authorizedExecuteCaller = executeRouter.createCaller({
+        ...ctx
+      })
+      const execResult = await authorizedExecuteCaller.execute()
 
       try {
         const submission = await ctx.db.submission.create({
           data: {
             authorId: ctx.userId,
-            questionId: getCurrentQuestion(),
+            questionId: currentQuestion,
             code: input.code,
             ...execResult,
           }
@@ -69,20 +75,3 @@ export const submissionRouter = createTRPCRouter({
       };
     }),
 });
-
-type CodeExecutionResult = {
-  runResult: SubmissionResult,
-  score: number,
-  codeLength: number,
-  solveTime: number,
-  execTime: number,
-}
-const executeCode = (_questionId: number, _code: string) => {
-  return {
-    runResult: SubmissionResult.CORRECT,
-    score: 456,
-    codeLength: 23,
-    solveTime: 7135,
-    execTime: 342
-  } satisfies CodeExecutionResult
-}

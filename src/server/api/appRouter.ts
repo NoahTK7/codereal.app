@@ -5,11 +5,7 @@ import { statisticsRouter } from "./routers/statistics";
 import { questionRouter } from "./routers/question";
 import { submissionRouter } from "./routers/submission";
 
-/**
- * This is the primary router for your server.
- *
- * All routers added in /api/routers should be manually added here.
- */
+// primary API router
 export const appRouter = createTRPCRouter({
   status: statusRouter,
   statistics: statisticsRouter,
