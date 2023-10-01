@@ -13,7 +13,7 @@ type PersonalStatusData = {
 }
 
 export const statusRouter = createTRPCRouter({
-  global: publicProcedure
+  global: publicProcedure // TODO cache response
     .query(() => {
       return {
         // TODO: add time til next question (?)

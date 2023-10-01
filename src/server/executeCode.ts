@@ -1,4 +1,5 @@
 import { type Question, SubmissionResult } from '@prisma/client';
+import { randomUUID } from 'crypto';
 import Sandbox from 'v8-sandbox';
 
 const sandbox = new Sandbox({
@@ -13,7 +14,8 @@ export type CodeExecutionResult = {
   runResult: SubmissionResult,
   accuracy: number
   execTime: number,
-  errorMessage: string | null
+  errorMessage: string | null,
+  executionId: string
 }
 
 export const executeCode = async (question: Question, userCode: string): Promise<CodeExecutionResult> => {
@@ -34,21 +36,25 @@ const result = runTests(${question.funcName}, testCases)
 setResult({value: result, error: null})
 `
 
+  const executionId = randomUUID()
+
   const startTime = process.hrtime()
   const res = await sandbox.execute({ code: runnerCode, timeout: TIMEOUT, context: { test: "123" } });
   const execTime = parseHrtimeToMilliseconds(process.hrtime(startTime));
 
   await sandbox.shutdown();
+  console.log(`execution ${executionId} result: ${JSON.stringify(res)}`)
 
-  let runResult: SubmissionResult = SubmissionResult.ERROR
-  if (res.value) runResult = (res.value as number < 1) ? SubmissionResult.INCORRECT : SubmissionResult.CORRECT
+  let runResult: SubmissionResult = SubmissionResult.UNKNOWN
+  if (typeof res.value === 'number') runResult = (res.value < 1) ? SubmissionResult.INCORRECT : SubmissionResult.CORRECT
   else if (res.error) runResult = (res.error.isTimeout) ? SubmissionResult.TIMEOUT : SubmissionResult.ERROR
 
   return {
     runResult,
     accuracy: res.value ? res.value as number : 0,
     execTime,
-    errorMessage: res.error ? res.error.message.substring(0, 1000) : null
+    errorMessage: res.error ? res.error.message.substring(0, 1000) : null,
+    executionId
   } satisfies CodeExecutionResult
 }
 

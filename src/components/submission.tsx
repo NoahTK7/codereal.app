@@ -9,12 +9,18 @@ export const Submission = (data: SubmissionProps) => {
     TIMEOUT: "text-rose-700	",
     INCORRECT: "text-yellow-500",
     CORRECT: "text-emerald-600",
+    UNKNOWN: "text-slate-500"
   };
   const statusColor = statusColors[data.runResult] || "";
 
   return (
     <div className="space-y-4 py-4 px-2">
       <p className="space-x-2"><span className="text-xl">Question #{data.questionId} Submission</span> <span className={"font-bold text-md " + statusColor}>({data.runResult})</span></p>
+      {data.errorMessage &&
+        <div className="rounded-md border border-stroke py-2 px-4 shadow-1 bg-rose-100 border-red-400">
+          <p>Error: &quot;{data.errorMessage}&quot;</p>
+        </div>
+      }
       <div className="mx-auto mt-4.5 mb-5.5 grid max-w-94 grid-cols-2 md:grid-cols-4 rounded-md border border-stroke py-2.5 shadow-1">
         <div className="flex flex-col items-baseline justify-center gap-1 border-r border-stroke px-4 sm:flex-row">
           <span className="font-semibold text-black">
@@ -30,7 +36,7 @@ export const Submission = (data: SubmissionProps) => {
         </div>
         <div className="flex flex-col items-baseline justify-center gap-1 border-r border-stroke px-4 sm:flex-row">
           <span className="font-semibold text-black">
-            {data.solveTime / 1000}s
+            {convertSeconds(Math.round(data.solveTime / 1000))}
           </span>
           <span className="text-sm">Solve time</span>
         </div>
@@ -51,4 +57,17 @@ export const Submission = (data: SubmissionProps) => {
       />
     </div>
   )
+}
+
+const convertSeconds = (seconds: number) => {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const remainingSeconds = seconds % 60
+
+  const display = []
+  if (hours > 0) display.push(`${hours}h`)
+  if (minutes > 0) display.push(`${minutes}m`)
+  display.push(`${remainingSeconds}s`)
+
+  return display.join("")
 }

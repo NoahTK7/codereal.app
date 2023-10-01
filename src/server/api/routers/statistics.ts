@@ -1,7 +1,7 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 
 export const statisticsRouter = createTRPCRouter({
-  global: publicProcedure
+  global: publicProcedure // TODO cache response
     .query(() => {
       // TODO
       return {

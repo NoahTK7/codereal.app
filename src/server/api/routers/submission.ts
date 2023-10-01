@@ -3,7 +3,7 @@ import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { type CodeExecutionResult, executeCode } from "~/server/executeCode";
 import { getQuestionById } from "./question";
-import { type Question, type PrismaClient } from "@prisma/client";
+import { type Question, type PrismaClient, SubmissionResult } from "@prisma/client";
 import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export const submissionRouter = createTRPCRouter({
@@ -112,6 +112,10 @@ const getSubmissionCountByQuestionId = (db: PrismaClient, qId: number) => {
 }
 
 const calculateScore = (execResult: CodeExecutionResult, solveTime: number, codeLength: number) => {
+  if (execResult.runResult === SubmissionResult.ERROR
+    || execResult.runResult === SubmissionResult.TIMEOUT) return 0
+  if (execResult.accuracy === 0) return 0
+
   const solveTimeScore = -1 * Math.tanh((solveTime / 1000) / 40 - 3) * 120 + 130 // 10 -> 250
   const execTimeScore = -1 * Math.tanh(execResult.execTime / 100 - 4) * 120 + 130 // 10 -> 250
   const codeLengthScore = -1 * Math.tanh(codeLength / 15 - 5) * 45 + 55 // 10 -> 100

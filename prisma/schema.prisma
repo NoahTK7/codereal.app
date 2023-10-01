@@ -42,7 +42,9 @@ model Submission {
     accuracy     Float
     errorMessage String?          @db.VarChar(1023)
     code         String           @db.VarChar(511)
+    executionId  String           @db.VarChar(63)
 
+    @@index([id])
     @@index([questionId, authorId])
 }
 
@@ -51,6 +53,7 @@ enum SubmissionResult {
     INCORRECT
     ERROR
     TIMEOUT
+    UNKNOWN
 }
 
 model StartEvent {

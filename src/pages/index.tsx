@@ -25,7 +25,7 @@ const Description = () => {
 }
 
 type SubmissionDisplayProps = { id: number }
-const SubmissionDisplay = ({ id }: SubmissionDisplayProps) => {
+export const SubmissionDisplay = ({ id }: SubmissionDisplayProps) => {
   const { data, isLoading, isError } = api.submission.getById.useQuery({ id }, noRefreshOpts)
 
   if (isLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
@@ -40,7 +40,9 @@ const Question = () => {
   const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
       void ctx.status.personal.invalidate()
-      void ctx.submission.invalidate()
+      void ctx.submission.invalidate(undefined, {
+        type: 'all' // refresh queries on other pages
+      })
     },
     onError: () => {
       // TODO: send error toast
