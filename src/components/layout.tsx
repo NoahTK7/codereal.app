@@ -80,7 +80,7 @@ export const PageLayout = (props: PropsWithChildren) => {
               <p className="align-middle">© 2023 Noah Kurrack. All rights reserved.</p>
             </div>
             <div className="max-w-7xl px-4 py-2 justify-right items-center">
-              <div className="hover:bg-white duration-200 px-1 py-1 rounded-md">
+              <div className="hover:bg-white duration-200 px-1 py-1 rounded-sm">
                 <a
                   href="https://www.linkedin.com/in/noahkurrack/"
                   target="_blank"

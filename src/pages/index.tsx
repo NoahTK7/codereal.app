@@ -6,6 +6,7 @@ import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { LoadingSpinner } from "~/components/loading";
 import { codeEditorExtensions, codeEditorTheme, noRefreshOpts } from "~/components/constants";
 import { Submission } from "~/components/submission";
+import { useStopwatch } from "react-timer-hook";
 
 const Description = () => {
   return (
@@ -60,7 +61,7 @@ const Question = () => {
 
   return (
     <div>
-      <p className="text-xl">Question #{data.id}</p>
+      <p className="text-xl mb-4">Question #{data.id}</p>
       <p>{data.questionDescription}</p>
 
       <ReactCodeMirror
@@ -83,6 +84,23 @@ const Question = () => {
         Submit
       </button>
     </div>
+  )
+}
+
+const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
+  const currentTime = new Date()
+  const offsetMilliseconds = currentTime.getTime() - startTime.getTime()
+  const offsetTimestamp = new Date()
+  offsetTimestamp.setTime(currentTime.getTime() + offsetMilliseconds)
+
+  const {
+    seconds,
+    minutes,
+    hours
+  } = useStopwatch({ autoStart: true, offsetTimestamp: offsetTimestamp });
+
+  return (
+    <span>{hours}h{minutes}m{seconds}s</span>
   )
 }
 
@@ -114,10 +132,10 @@ const ChallengeHandler = (props: ChallengeHandlerProps) => {
   if (props.started.status) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-large font-mono font-bold">Today&apos;s Challenge</p>
+        <p className="text-xl font-mono font-bold">Today&apos;s Challenge</p>
         <Question />
         {/* TODO: counter/time that counts up from start time in real time */}
-        {props.started.startTime && <p>Elapsed time: {props.started.startTime.toISOString()}</p>}
+        {props.started.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.started.startTime} /></p>}
       </div>
     )
   }

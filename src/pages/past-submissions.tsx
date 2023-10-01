@@ -23,7 +23,7 @@ const SubmissionsList = () => {
 
   if (error) return <p>Could not load past submissions.</p>
 
-  if (isLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
+  if (isLoading) return <div className="flex justify-center pt-4"><LoadingSpinner size={48} /></div>
 
   return (
     <>
@@ -38,7 +38,7 @@ const SubmissionsList = () => {
         </React.Fragment>
       ))}
 
-      <div className="flex justify-center">
+      <div className="flex justify-center pt-4">
         {isFetchingNextPage || isFetching
           ? <LoadingSpinner size={48} />
           : hasNextPage

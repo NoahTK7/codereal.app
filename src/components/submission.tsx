@@ -29,7 +29,7 @@ export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean
             {isExpanded ? <ChevronDownIcon height={24} width={24} /> : <ChevronRightIcon height={24} width={24} />}
           </div>}
       </div>
-      <section {...getCollapseProps()} className="space-y-4">
+      <section {...getCollapseProps()} className="space-y-4 !mb-4">
         {data.errorMessage &&
           <div className="rounded-md border border-stroke py-2 px-4 shadow-1 bg-rose-100 border-red-400">
             <p>Error: &quot;{data.errorMessage}&quot;</p>
