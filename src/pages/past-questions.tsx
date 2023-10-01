@@ -36,21 +36,24 @@ const SubmissionsList = () => {
             </div>
           ))}
         </React.Fragment>
-      ))
-      }
+      ))}
+
       <div className="flex justify-center">
-        <button
-          onClick={() => void fetchNextPage()}
-          disabled={!hasNextPage || isFetchingNextPage}
-        >
-          {isFetchingNextPage || isFetching
-            ? 'Loading more...'
-            : hasNextPage
-              ? 'Load More'
-              : 'Nothing more to load'}
-        </button>
-        {/* TODO: display spinner instead of button when fetching; hiden when no more to load */}
+        {isFetchingNextPage || isFetching
+          ? <LoadingSpinner size={48} />
+          : hasNextPage
+            ?
+            <button
+              onClick={() => void fetchNextPage()}
+              disabled={!hasNextPage || isFetchingNextPage}
+              className="underline"
+            >
+              Load more
+            </button>
+
+            : null}
       </div>
+
     </>
   )
 }

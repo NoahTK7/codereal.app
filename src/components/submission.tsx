@@ -41,7 +41,7 @@ export const Submission = (data: SubmissionProps) => {
           <span className="text-sm">Solve time</span>
         </div>
         <div className="flex flex-col items-baseline justify-center gap-1 px-4 sm:flex-row">
-          <span className="font-semibold text-black dark:text-white">
+          <span className="font-semibold text-black">
             {data.codeLength}
           </span>
           <span className="text-sm">Code length</span>
