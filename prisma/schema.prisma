@@ -18,6 +18,8 @@ model Question {
     endsAt      DateTime
     description String       @db.VarChar(511)
     funcSig     String       @db.VarChar(63)
+    funcName    String       @db.VarChar(63)
+    testCases   String       @db.VarChar(1023)
     submissions Submission[]
     startEvents StartEvent[]
 
@@ -29,15 +31,17 @@ model Submission {
     id        Int      @id @default(autoincrement())
     createdAt DateTime @default(now())
 
-    authorId   String           @db.VarChar(255)
-    question   Question         @relation(fields: [questionId], references: [id])
-    questionId Int
-    runResult  SubmissionResult
-    score      Int
-    codeLength Int
-    solveTime  Int
-    execTime   Int
-    code       String           @db.VarChar(511)
+    authorId     String           @db.VarChar(255)
+    question     Question         @relation(fields: [questionId], references: [id])
+    questionId   Int
+    runResult    SubmissionResult
+    score        Int
+    codeLength   Int
+    solveTime    Int
+    execTime     Int
+    accuracy     Float
+    errorMessage String?          @db.VarChar(1023)
+    code         String           @db.VarChar(511)
 
     @@index([questionId, authorId])
 }

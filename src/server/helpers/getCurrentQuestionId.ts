@@ -3,6 +3,6 @@
 //  - how is this determined efficiently
 //  - how can edge cases be solved when requests submitted close to boundary?
 //    - pass question id to most api calls?
-export const getCurrentQuestion = () => {
+export const getCurrentQuestionId = () => {
   return 2
 }

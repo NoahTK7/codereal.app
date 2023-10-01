@@ -1,24 +1,26 @@
+import { type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
-import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
+import { filterQuestionForClient } from "~/server/helpers/filter";
+import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
+
+export const getQuestionById = async (db: PrismaClient, qid: number) => {
+  const question = await db.question.findFirst({
+    where: {
+      id: qid
+    }
+  })
+
+  if (question == null) throw new TRPCError({ code: "NOT_FOUND" })
+
+  return question
+}
 
 export const questionRouter = createTRPCRouter({
   get: privateProcedure
     .query(async ({ ctx }) => {
-      const question = await ctx.db.question.findFirst({
-        where: {
-          id: getCurrentQuestion()
-        }
-      })
-
-      if (question == null) throw new TRPCError({ code: "NOT_FOUND" })
-
-      // TODO just return question db record
-      return {
-        id: question.id,
-        questionDescription: question.description,
-        funcSignature: question.funcSig
-      }
+      const question = await getQuestionById(ctx.db, getCurrentQuestionId())
+      return filterQuestionForClient(question)
     }),
   start: privateProcedure
     .mutation(async ({ ctx }) => {
@@ -27,7 +29,7 @@ export const questionRouter = createTRPCRouter({
         const startEvent = await ctx.db.startEvent.create({
           data: {
             authorId: ctx.userId,
-            questionId: getCurrentQuestion()
+            questionId: getCurrentQuestionId()
           }
         })
         return {

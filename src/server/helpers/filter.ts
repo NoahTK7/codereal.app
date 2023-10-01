@@ -1,4 +1,6 @@
 import type { User } from "@clerk/nextjs/api";
+import type { Question } from "@prisma/client";
+
 export const filterUserForClient = (user: User) => {
   return {
     id: user.id,
@@ -7,3 +9,11 @@ export const filterUserForClient = (user: User) => {
     externalUsername: user.externalAccounts.find((externalAccount) => externalAccount.provider === "oauth_github")?.username ?? null
   };
 };
+
+export const filterQuestionForClient = (question: Question) => {
+  return {
+    id: question.id,
+    questionDescription: question.description,
+    funcSignature: question.funcSig,
+  }
+}

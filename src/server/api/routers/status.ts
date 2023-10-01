@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
+import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 type PersonalStatusData = {
   started: {
@@ -25,7 +25,7 @@ export const statusRouter = createTRPCRouter({
       const startEvent = await ctx.db.startEvent.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: getCurrentQuestion()
+          questionId: getCurrentQuestionId()
         }
       })
 
@@ -45,7 +45,7 @@ export const statusRouter = createTRPCRouter({
       const submission = await ctx.db.submission.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: getCurrentQuestion()
+          questionId: getCurrentQuestionId()
         },
         select: {
           id: true
