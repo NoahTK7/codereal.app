@@ -1,8 +1,10 @@
-import { SubmissionResult } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
-import { getCurrentQuestion } from "~/server/helpers/getCurrentQuestion";
+import { type CodeExecutionResult, executeCode } from "~/server/executeCode";
+import { getQuestionById } from "./question";
+import { type Question, type PrismaClient } from "@prisma/client";
+import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
@@ -18,20 +20,36 @@ export const submissionRouter = createTRPCRouter({
   submit: privateProcedure
     .input(z.object({ code: z.string().max(512) }))
     .mutation(async ({ ctx, input }) => {
-      const currentQuestion = getCurrentQuestion()
-      const execResult = executeCode(currentQuestion, input.code)
+      const currentQuestionId = getCurrentQuestionId()
+
+      if (await getSubmissionCountByQuestionId(ctx.db, currentQuestionId) > 0)
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You already submitted this question!" })
+
+      const currentQuestion = await getQuestionById(ctx.db, currentQuestionId)
+
+      const [solveTime, execResult] = await Promise.all([
+        getSolveTime(ctx),
+        executeCode(currentQuestion, input.code)
+      ])
+      const codeLength = getCodeLength(currentQuestion, input.code)
+
+      const score = calculateScore(execResult, solveTime, codeLength)
 
       try {
         const submission = await ctx.db.submission.create({
           data: {
             authorId: ctx.userId,
-            questionId: getCurrentQuestion(),
+            questionId: currentQuestion.id,
             code: input.code,
+            solveTime,
+            codeLength,
+            score,
             ...execResult,
           }
         })
         return {
-          submissionId: submission.id
+          submissionId: submission.id,
+          execResult
         }
       } catch (e) {
         console.error("submissionRouter/submit", e)
@@ -70,19 +88,34 @@ export const submissionRouter = createTRPCRouter({
     }),
 });
 
-type CodeExecutionResult = {
-  runResult: SubmissionResult,
-  score: number,
-  codeLength: number,
-  solveTime: number,
-  execTime: number,
+const getCodeLength = (question: Question, userCode: string) => {
+  return userCode.length - question.funcSig.length - 5;
 }
-const executeCode = (_questionId: number, _code: string) => {
-  return {
-    runResult: SubmissionResult.CORRECT,
-    score: 456,
-    codeLength: 23,
-    solveTime: 7135,
-    execTime: 342
-  } satisfies CodeExecutionResult
+
+const getSolveTime = async (ctx: { db: PrismaClient, userId: string }) => {
+  const startEvent = await ctx.db.startEvent.findFirst({
+    where: {
+      authorId: ctx.userId,
+      questionId: getCurrentQuestionId()
+    }
+  })
+  if (startEvent == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You never started this question!" })
+  return Math.abs((new Date).getTime() - startEvent.createdAt.getTime())
+}
+
+const getSubmissionCountByQuestionId = (db: PrismaClient, qId: number) => {
+  return db.submission.count({
+    where: {
+      questionId: qId
+    }
+  })
+}
+
+const calculateScore = (execResult: CodeExecutionResult, solveTime: number, codeLength: number) => {
+  const solveTimeScore = -1 * Math.tanh((solveTime / 1000) / 40 - 3) * 120 + 130 // 10 -> 250
+  const execTimeScore = -1 * Math.tanh(execResult.execTime / 100 - 4) * 120 + 130 // 10 -> 250
+  const codeLengthScore = -1 * Math.tanh(codeLength / 15 - 5) * 45 + 55 // 10 -> 100
+  const accuracyScore = execResult.accuracy * 400 // 0 -> 400
+
+  return Math.round(solveTimeScore + execTimeScore + codeLengthScore + accuracyScore)
 }
