@@ -23,7 +23,7 @@ export const submissionRouter = createTRPCRouter({
       const currentQuestionId = getCurrentQuestionId()
 
       if (await getSubmissionCountByQuestionId(ctx.db, currentQuestionId) > 0)
-        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "you already submitted this question" })
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You already submitted this question!" })
 
       const currentQuestion = await getQuestionById(ctx.db, currentQuestionId)
 
@@ -48,7 +48,8 @@ export const submissionRouter = createTRPCRouter({
           }
         })
         return {
-          submissionId: submission.id
+          submissionId: submission.id,
+          execResult
         }
       } catch (e) {
         console.error("submissionRouter/submit", e)
@@ -98,7 +99,7 @@ const getSolveTime = async (ctx: { db: PrismaClient, userId: string }) => {
       questionId: getCurrentQuestionId()
     }
   })
-  if (startEvent == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "looks like you never started this question" })
+  if (startEvent == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You never started this question!" })
   return Math.abs((new Date).getTime() - startEvent.createdAt.getTime())
 }
 
