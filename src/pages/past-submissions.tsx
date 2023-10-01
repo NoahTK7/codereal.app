@@ -31,8 +31,8 @@ const SubmissionsList = () => {
         <React.Fragment key={i}>
           {group.submissions.map((submission, i) => (
             <div key={i} >
+              <Submission data={submission} solo={false} />
               <hr />
-              <Submission {...submission} />
             </div>
           ))}
         </React.Fragment>
@@ -61,7 +61,11 @@ const SubmissionsList = () => {
 export default function PastQuestionsPage() {
   return (
     <PageLayout>
-      <p className="text-2xl font-mono font-bold">Past Questions</p>
+      <div className="space-y-4 pb-6">
+        <p className="text-2xl font-mono font-bold">Past Submissions</p>
+        <p>All of your previously submitted solutions are listed here.</p>
+      </div>
+      <hr />
       <SubmissionsList />
     </PageLayout>
   )

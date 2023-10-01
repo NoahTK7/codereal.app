@@ -3,6 +3,7 @@ import Head from "next/head";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { api } from "~/utils/api";
+import { LinkedInLogoIcon } from '@radix-ui/react-icons';
 
 const Account = () => {
   return (
@@ -49,7 +50,7 @@ export const PageLayout = (props: PropsWithChildren) => {
                   <Link href="/" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-xl font-large font-mono font-bold" >CodeReal</Link>
                 </div>
                 <div className="flex space-x-4 items-center">
-                  <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
+                  <Link href="/past-submissions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Submissions</Link>
                 </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
@@ -62,7 +63,7 @@ export const PageLayout = (props: PropsWithChildren) => {
         </nav>
 
         <main className="flex-grow lg:w-3/4">
-          <div className="px-4 lg:px-16 py-4 lg:py-8 space-y-4">
+          <div className="px-4 lg:px-16 py-4 lg:py-8">
             {props.children}
           </div>
         </main>
@@ -76,10 +77,18 @@ export const PageLayout = (props: PropsWithChildren) => {
           </div>
           <div className="flex justify-between">
             <div className="max-w-7xl px-4 py-2 justify-left">
-              © 2023 Noah Kurrack. All rights reserved.
+              <p className="align-middle">© 2023 Noah Kurrack. All rights reserved.</p>
             </div>
-            <div className="max-w-7xl px-4 py-2 justify-right">
-              LinkedIn
+            <div className="max-w-7xl px-4 py-2 justify-right items-center">
+              <div className="hover:bg-white duration-200 px-1 py-1 rounded-md">
+                <a
+                  href="https://www.linkedin.com/in/noahkurrack/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <LinkedInLogoIcon height={20} width={20} />
+                </a>
+              </div>
             </div>
           </div>
         </footer>
