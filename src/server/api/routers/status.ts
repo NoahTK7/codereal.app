@@ -2,50 +2,46 @@ import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/ap
 import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export type PersonalStatusData = {
-  started: {
-    status: boolean,
-    startTime: Date | null
-  },
-  completed: {
-    status: boolean,
-    submissionId: number | null
-  }
+  isStarted: boolean,
+  isCompleted: boolean,
+  questionId: number,
+  submissionId: number | null,
+  startTime: Date | null
 }
 
 export const statusRouter = createTRPCRouter({
   global: publicProcedure // TODO cache response
     .query(() => {
       return {
-        // TODO: add time til next question (?)
+        // TODO: timestamp of when next question starts
         numAnswered: 3, // TODO
       }
     }),
   personal: privateProcedure
     .query(async ({ ctx }): Promise<PersonalStatusData> => {
+      const currentQuestionId = getCurrentQuestionId()
+
       const startEvent = await ctx.db.startEvent.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: getCurrentQuestionId()
+          questionId: currentQuestionId
         }
       })
 
       if (startEvent == null) {
         return {
-          started: {
-            status: false,
-            startTime: null
-          },
-          completed: {
-            status: false,
-            submissionId: null
-          }
+          isStarted: false,
+          isCompleted: false,
+          questionId: currentQuestionId,
+          submissionId: null,
+          startTime: null
         } satisfies PersonalStatusData
       }
 
       const submission = await ctx.db.submission.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: getCurrentQuestionId()
+          questionId: currentQuestionId
         },
         select: {
           id: true
@@ -53,14 +49,11 @@ export const statusRouter = createTRPCRouter({
       })
 
       return {
-        started: {
-          status: true,
-          startTime: startEvent.createdAt
-        },
-        completed: {
-          status: submission != null,
-          submissionId: submission?.id ?? null
-        },
+        isStarted: true,
+        startTime: startEvent.createdAt,
+        isCompleted: submission != null,
+        submissionId: submission?.id ?? null,
+        questionId: currentQuestionId
       } satisfies PersonalStatusData
     })
 });

@@ -31,6 +31,8 @@ export const PageLayout = (props: PropsWithChildren) => {
     staleTime: 1000 * 60 // 1 minute
   })
 
+  // TODO: add timeout to send toast when question changes (based on time returned by status.global)
+
   return (
     <>
       <Head>
@@ -74,7 +76,7 @@ export const PageLayout = (props: PropsWithChildren) => {
             <div className="max-w-7xl px-4 py-2 font-mono">
               {globalStatus.data ? `${globalStatus.data.numAnswered} people have solved todays question.` : 'Loading...'}
             </div>
-            {/* TODO: time til next question */}
+            {/* TODO: calculate time til next question */}
           </div>
           <div className="flex justify-between">
             <div className="max-w-7xl px-4 py-2 justify-left">

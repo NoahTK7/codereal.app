@@ -1,4 +1,3 @@
-import { PageLayout } from "~/components/layout";
 import { api } from "~/utils/api";
 import { SignInButton, SignedIn, SignedOut } from "@clerk/nextjs";
 import { LoadingSpinner } from "~/components/loading";
@@ -40,24 +39,20 @@ const SignedInHome = () => {
 export default function HomePage() {
 
   return (
-    <>
-      <PageLayout>
-        <div className="space-y-4">
-          <Description />
-          <hr />
-          <SignedIn>
-            <SignedInHome />
-          </SignedIn>
-          <SignedOut>
-            <div className="px-2 py-2 space-y-4">
-              <p>Sign in to get started!</p>
-              <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
-                <SignInButton />
-              </div>
-            </div>
-          </SignedOut>
+    <div className="space-y-4">
+      <Description />
+      <hr />
+      <SignedIn>
+        <SignedInHome />
+      </SignedIn>
+      <SignedOut>
+        <div className="px-2 py-2 space-y-4">
+          <p>Sign in to get started!</p>
+          <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
+            <SignInButton />
+          </div>
         </div>
-      </PageLayout>
-    </>
+      </SignedOut>
+    </div>
   );
 }

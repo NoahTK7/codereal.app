@@ -4,31 +4,33 @@ import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { type CodeExecutionResult, executeCode } from "~/server/executeCode";
 import { getQuestionById } from "./question";
 import { type Question, type PrismaClient, SubmissionResult } from "@prisma/client";
-import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const submission = await ctx.db.submission.findFirstOrThrow({
+      const submission = await ctx.db.submission.findFirst({
         where: {
-          id: input.id
+          id: input.id,
+          authorId: ctx.userId
         }
       })
+      if (submission === null) throw new TRPCError({ code: "NOT_FOUND" })
       return submission
     }),
   submit: privateProcedure
-    .input(z.object({ code: z.string().max(512) }))
+    .input(z.object({
+      code: z.string().max(512),
+      questionId: z.number()
+    }))
     .mutation(async ({ ctx, input }) => {
-      const currentQuestionId = getCurrentQuestionId()
-
-      if (await getSubmissionCountByQuestionId(ctx.db, currentQuestionId) > 0)
+      if (await isQuestionAlreadySubmittedByUser(ctx.db, ctx.userId, input.questionId))
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You already submitted this question!" })
 
-      const currentQuestion = await getQuestionById(ctx.db, currentQuestionId)
+      const currentQuestion = await getQuestionById(ctx.db, input.questionId)
 
       const [solveTime, execResult] = await Promise.all([
-        getSolveTime(ctx),
+        getSolveTime(ctx.db, ctx.userId, input.questionId),
         executeCode(currentQuestion, input.code)
       ])
       const codeLength = getCodeLength(currentQuestion, input.code)
@@ -53,7 +55,7 @@ export const submissionRouter = createTRPCRouter({
         }
       } catch (e) {
         console.error("submissionRouter/submit", e)
-        return new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
     }),
   getInfinite: privateProcedure
@@ -92,23 +94,25 @@ const getCodeLength = (question: Question, userCode: string) => {
   return userCode.length - question.funcSig.length - 5;
 }
 
-const getSolveTime = async (ctx: { db: PrismaClient, userId: string }) => {
-  const startEvent = await ctx.db.startEvent.findFirst({
+const getSolveTime = async (db: PrismaClient, userId: string, questionId: number) => {
+  const startEvent = await db.startEvent.findFirst({
     where: {
-      authorId: ctx.userId,
-      questionId: getCurrentQuestionId()
+      authorId: userId,
+      questionId: questionId
     }
   })
   if (startEvent == null) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You never started this question!" })
   return Math.abs((new Date).getTime() - startEvent.createdAt.getTime())
 }
 
-const getSubmissionCountByQuestionId = (db: PrismaClient, qId: number) => {
-  return db.submission.count({
+const isQuestionAlreadySubmittedByUser = async (db: PrismaClient, userId: string, questionId: number) => {
+  const num = await db.submission.count({
     where: {
-      questionId: qId
+      authorId: userId,
+      questionId: questionId
     }
   })
+  return num > 0
 }
 
 const calculateScore = (execResult: CodeExecutionResult, solveTime: number, codeLength: number) => {

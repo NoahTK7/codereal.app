@@ -1,8 +1,8 @@
-// TODO: determine how this will be determined
-//  - what is the source of truth?
-//  - how is this determined efficiently
-//  - how can edge cases be solved when requests submitted close to boundary?
-//    - pass question id to most api calls?
+// This function is the source of truth
+// The current question id is passed to the client via "status.personal" proc
+// Otherwise, this function should only be used to validate that future questions are not being accessed/referenced
+// All other procs that need a question id must get the id from the client
 export const getCurrentQuestionId = () => {
-  return 2
+  // TODO: query Question table
+  return 3
 }

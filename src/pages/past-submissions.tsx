@@ -1,6 +1,5 @@
 import React from "react";
 import { noRefreshOpts } from "~/components/constants";
-import { PageLayout } from "~/components/layout";
 import { LoadingSpinner } from "~/components/loading";
 import { Submission } from "~/components/submission";
 import { api } from "~/utils/api";
@@ -60,13 +59,13 @@ const SubmissionsList = () => {
 
 export default function PastQuestionsPage() {
   return (
-    <PageLayout>
+    <>
       <div className="space-y-4 pb-6">
         <p className="text-2xl font-mono font-bold">Past Submissions</p>
         <p>All of your previously submitted solutions are listed here.</p>
       </div>
       <hr />
       <SubmissionsList />
-    </PageLayout>
+    </>
   )
 }

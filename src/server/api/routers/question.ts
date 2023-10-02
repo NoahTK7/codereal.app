@@ -1,5 +1,6 @@
 import { type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
+import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { filterQuestionForClient } from "~/server/helpers/filter";
 import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
@@ -11,25 +12,36 @@ export const getQuestionById = async (db: PrismaClient, qid: number) => {
     }
   })
 
-  if (question == null) throw new TRPCError({ code: "NOT_FOUND" })
+  if (question === null) throw new TRPCError({ code: "NOT_FOUND" })
 
   return question
 }
 
 export const questionRouter = createTRPCRouter({
   get: privateProcedure
-    .query(async ({ ctx }) => {
-      const question = await getQuestionById(ctx.db, getCurrentQuestionId())
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (input.id > getCurrentQuestionId())
+        throw new TRPCError({ code: "NOT_FOUND" })
+      const question = await getQuestionById(ctx.db, input.id)
       return filterQuestionForClient(question)
     }),
   start: privateProcedure
-    .mutation(async ({ ctx }) => {
-      // TODO check if already started
+    .input(z.object({ questionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (input.questionId > getCurrentQuestionId())
+        throw new TRPCError({ code: "NOT_FOUND" })
+
+      if (await isQuestionAlreadyStartedByUser(ctx.db, ctx.userId, input.questionId))
+        return {
+          result: true
+        }
+
       try {
         const startEvent = await ctx.db.startEvent.create({
           data: {
             authorId: ctx.userId,
-            questionId: getCurrentQuestionId()
+            questionId: input.questionId
           }
         })
         return {
@@ -42,3 +54,13 @@ export const questionRouter = createTRPCRouter({
       }
     })
 });
+
+const isQuestionAlreadyStartedByUser = async (db: PrismaClient, userId: string, questionId: number) => {
+  const num = await db.startEvent.count({
+    where: {
+      authorId: userId,
+      questionId: questionId,
+    }
+  })
+  return num > 0
+}

@@ -6,8 +6,8 @@ import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./constant
 import { SubmissionDisplay } from "./submission"
 import { type PersonalStatusData } from "~/server/api/routers/status"
 
-const Question = () => {
-  const { data, isLoading, isError } = api.question.get.useQuery(undefined, noRefreshOpts)
+const Question = ({ questionId }: { questionId: number }) => {
+  const { data, isLoading, isError } = api.question.get.useQuery({ id: questionId }, noRefreshOpts)
   const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
       void ctx.status.personal.invalidate()
@@ -47,7 +47,7 @@ const Question = () => {
       <button
         className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300 mt-8"
         type="submit"
-        onClick={() => submitQuestion({ code })}
+        onClick={() => submitQuestion({ questionId, code })}
         disabled={submitting}
       >
         Submit
@@ -84,23 +84,23 @@ export const QuestionHandler = (props: PersonalStatusData) => {
     }
   })
 
-  if (props.completed.status) {
+  if (props.isCompleted) {
     return (
       <>
         <p>You&apos;ve already completed today&apos;s challenge!</p>
-        {props.completed.submissionId
-          ? <SubmissionDisplay id={props.completed.submissionId} />
+        {props.submissionId
+          ? <SubmissionDisplay id={props.submissionId} />
           : <p>There was an error retrieving your submission.</p>}
       </>
     )
   }
 
-  if (props.started.status) {
+  if (props.isStarted) {
     return (
       <div className="px-2 py-2 space-y-4">
         <p className="text-xl font-mono font-bold">Today&apos;s Challenge</p>
-        <Question />
-        {props.started.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.started.startTime} /></p>}
+        <Question questionId={props.questionId} />
+        {props.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.startTime} /></p>}
       </div>
     )
   }
@@ -110,7 +110,7 @@ export const QuestionHandler = (props: PersonalStatusData) => {
       <p>Click button to start today&apos;s challenge!</p>
       <button
         disabled={isQuestionLoading}
-        onClick={(_e) => startQuestion()}
+        onClick={(_e) => startQuestion({ questionId: props.questionId })}
         className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
       >
         Start!
