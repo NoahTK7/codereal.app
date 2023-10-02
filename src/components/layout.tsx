@@ -67,6 +67,7 @@ export const PageLayout = (props: PropsWithChildren) => {
             {props.children}
           </div>
         </main>
+        {/* TODO: add leaderboard and stats sidebar */}
 
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
           <div className="flex justify-center ">

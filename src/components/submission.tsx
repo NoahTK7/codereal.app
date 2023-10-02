@@ -1,8 +1,9 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
-import { type RouterOutputs } from "~/utils/api";
-import { codeEditorExtensions, codeEditorTheme } from "./constants";
+import { api, type RouterOutputs } from "~/utils/api";
+import { codeEditorExtensions, codeEditorTheme, noRefreshOpts } from "./constants";
 import { useCollapse } from "react-collapsed";
 import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+import { LoadingSpinner } from "./loading";
 
 type SubmissionItem = RouterOutputs['submission']['getInfinite']['submissions'][number]
 export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean }) => {
@@ -72,6 +73,16 @@ export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean
       </section>
     </div>
   )
+}
+
+export const SubmissionDisplay = ({ id }: { id: number }) => {
+  const { data, isLoading, isError } = api.submission.getById.useQuery({ id }, noRefreshOpts)
+
+  if (isLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
+
+  if (isError) return <p>There was an error retrieving your submission.</p>
+
+  return <Submission data={data} solo={true} />
 }
 
 const convertSeconds = (seconds: number) => {
