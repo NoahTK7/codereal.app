@@ -5,18 +5,20 @@ import { api } from "~/utils/api"
 import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./constants"
 import { SubmissionDisplay } from "./submission"
 import { type PersonalStatusData } from "~/server/api/routers/status"
+import toast from "react-hot-toast"
 
 const Question = ({ questionId }: { questionId: number }) => {
   const { data, isLoading, isError } = api.question.get.useQuery({ id: questionId }, noRefreshOpts)
   const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
     onSuccess: () => {
+      toast.success('Your submission was recorded!')
       void ctx.status.personal.invalidate()
       void ctx.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
     },
-    onError: () => {
-      // TODO: send error toast
+    onError: (error) => {
+      toast.error(`An error occured: ${error.message}`)
     }
   })
   const [code, setCode] = useState<string>("")
@@ -69,7 +71,7 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
   } = useStopwatch({ autoStart: true, offsetTimestamp: offsetTimestamp });
 
   return (
-    <span>{hours}h{minutes}m{seconds}s</span>
+    <span>{hours}h {minutes}m {seconds}s</span>
   )
 }
 
@@ -79,8 +81,8 @@ export const QuestionHandler = (props: PersonalStatusData) => {
     onSuccess: () => {
       void ctx.status.personal.invalidate()
     },
-    onError: () => {
-      // TODO: send error toast
+    onError: (error) => {
+      toast.error(`An error occured: ${error.message}`)
     }
   })
 
@@ -98,7 +100,7 @@ export const QuestionHandler = (props: PersonalStatusData) => {
   if (props.isStarted) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-xl font-mono font-bold">Today&apos;s Challenge</p>
+        <p className="text-xl font-mono font-bold">Today&apos;s Question (#{props.questionId})</p>
         <Question questionId={props.questionId} />
         {props.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.startTime} /></p>}
       </div>
@@ -107,7 +109,7 @@ export const QuestionHandler = (props: PersonalStatusData) => {
 
   return (
     <div className="space-y-4">
-      <p>Click button to start today&apos;s challenge!</p>
+      <p>Click button to start today&apos;s question (#{props.questionId})!</p>
       <button
         disabled={isQuestionLoading}
         onClick={(_e) => startQuestion({ questionId: props.questionId })}

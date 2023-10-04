@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
+import { getCurrentQuestionExp, getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export type PersonalStatusData = {
   isStarted: boolean,
@@ -10,11 +10,11 @@ export type PersonalStatusData = {
 }
 
 export const statusRouter = createTRPCRouter({
-  global: publicProcedure // TODO cache response
+  global: publicProcedure // TODO cache response (60s)
     .query(() => {
+      const currentQuestionId = getCurrentQuestionId()
       return {
-        // TODO: timestamp of when next question starts
-        numAnswered: 3, // TODO
+        questionExpiration: getCurrentQuestionExp(currentQuestionId),
       }
     }),
   personal: privateProcedure

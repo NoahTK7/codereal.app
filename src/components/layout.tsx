@@ -4,6 +4,10 @@ import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { api } from "~/utils/api";
 import { LinkedInLogoIcon } from '@radix-ui/react-icons';
+import { useTimer } from "react-timer-hook";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { noRefreshOpts } from "./constants";
 
 const Account = () => {
   return (
@@ -23,22 +27,70 @@ const Account = () => {
       </SignedOut>
     </>
   )
+}
 
+const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
+  const ctx = api.useContext()
+  const router = useRouter()
+
+  const displayNewQuestionAvailable = () => {
+    toast.dismiss()
+    toast((t) => (
+      <span>
+        A new question is available.
+        <div className="flex justify-center mt-1 sm:inline sm:mt-0">
+          <button
+            onClick={() => void loadNewQuestion(t.id)}
+            className="bg-green-600 hover:bg-green-700 text-white font-bold ml-2 p-1 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
+          >
+            Go!
+          </button>
+          <button
+            onClick={() => toast.dismiss(t.id)}
+            className="bg-slate-200 text-gray-800 ml-2 p-1 rounded"
+          >
+            Dismiss
+          </button>
+        </div>
+      </span>
+    ), {
+      duration: Infinity,
+      style: { minWidth: "360px" }
+    })
+
+    const loadNewQuestion = async (tId: string) => {
+      await ctx.status.invalidate()
+      toast.dismiss(tId)
+      router.push("/")
+    }
+  }
+
+  const remainingTime = useTimer({
+    expiryTimestamp: expTimestamp,
+    autoStart: false,
+    onExpire: displayNewQuestionAvailable
+  })
+
+  setTimeout(() => {
+    if (expTimestamp.getTime() - new Date().getTime() > 1000 * 5)
+      remainingTime.restart(expTimestamp)
+  }, 1000)
+
+  return <span>Next question in {`${remainingTime.hours}h ${remainingTime.minutes}m ${remainingTime.seconds}s`}.</span>
 }
 
 export const PageLayout = (props: PropsWithChildren) => {
-  const globalStatus = api.status.global.useQuery(undefined, {
+  const { data: globalStatus } = api.status.global.useQuery(undefined, noRefreshOpts)
+  const { data: globalStats } = api.statistics.global.useQuery(undefined, {
     staleTime: 1000 * 60 // 1 minute
   })
-
-  // TODO: add timeout to send toast when question changes (based on time returned by status.global)
 
   return (
     <>
       <Head>
         <title>CodeReal</title>
         <meta name="description" content="CodeReal, created by Noah Kurrack" />
-        {/* TODO: fix favicon */}
+        {/* TODO: replace favicon */}
         <link rel="icon" href="/favicon.ico" />
         {/* TODO: add more metadata, specifically opengraph vals */}
       </Head>
@@ -74,10 +126,16 @@ export const PageLayout = (props: PropsWithChildren) => {
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
           <div className="flex justify-center ">
             <div className="max-w-7xl px-4 py-2 font-mono">
-              {globalStatus.data ? `${globalStatus.data.numAnswered} people have solved todays question.` : 'Loading...'}
+              {globalStatus && globalStats ? (
+                <>
+                  <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
+                  <QuestionCountDown expTimestamp={globalStatus.questionExpiration} />
+                </>
+              )
+                : 'Loading...'}
             </div>
-            {/* TODO: calculate time til next question */}
           </div>
+          {/* TODO: share link button (copy to clipboard/) */}
           <div className="flex justify-between">
             <div className="max-w-7xl px-4 py-2 justify-left">
               <p className="align-middle">© 2023 Noah Kurrack. All rights reserved.</p>
