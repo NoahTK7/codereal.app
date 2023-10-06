@@ -4,6 +4,7 @@ import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { type CodeExecutionResult, executeCode } from "~/server/executeCode";
 import { getQuestionById } from "./question";
 import { type Question, type PrismaClient, SubmissionResult } from "@prisma/client";
+import { updateQuestionStats, updateUserStats } from "./statistics";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
@@ -27,21 +28,22 @@ export const submissionRouter = createTRPCRouter({
       if (await isQuestionAlreadySubmittedByUser(ctx.db, ctx.userId, input.questionId))
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You already submitted this question!" })
 
-      const currentQuestion = await getQuestionById(ctx.db, input.questionId)
+      const question = await getQuestionById(ctx.db, input.questionId)
 
       const [solveTime, execResult] = await Promise.all([
         getSolveTime(ctx.db, ctx.userId, input.questionId),
-        executeCode(currentQuestion, input.code)
+        executeCode(question, input.code)
       ])
-      const codeLength = getCodeLength(currentQuestion, input.code)
+      const codeLength = getCodeLength(question, input.code)
 
       const score = calculateScore(execResult, solveTime, codeLength)
 
+      let submission
       try {
-        const submission = await ctx.db.submission.create({
+        submission = await ctx.db.submission.create({
           data: {
             authorId: ctx.userId,
-            questionId: currentQuestion.id,
+            questionId: question.id,
             code: input.code,
             solveTime,
             codeLength,
@@ -49,13 +51,17 @@ export const submissionRouter = createTRPCRouter({
             ...execResult,
           }
         })
-        return {
-          submissionId: submission.id,
-          execResult
-        }
       } catch (e) {
         console.error("submissionRouter/submit", e)
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+      }
+
+      void updateQuestionStats(ctx.db, submission) // asynchronous
+      await updateUserStats(ctx.db, submission) // synchronous
+
+      return {
+        submissionId: submission.id,
+        execResult
       }
     }),
   getInfinite: privateProcedure

@@ -14,14 +14,16 @@ datasource db {
 model Question {
     id Int @id @default(autoincrement())
 
-    startsAt    DateTime
-    endsAt      DateTime
-    description String       @db.VarChar(511)
-    funcSig     String       @db.VarChar(63)
-    funcName    String       @db.VarChar(63)
-    testCases   String       @db.VarChar(1023)
-    submissions Submission[]
-    startEvents StartEvent[]
+    // TODO: add question number (for display)
+    startsAt      DateTime
+    endsAt        DateTime
+    description   String          @db.VarChar(511)
+    funcSig       String          @db.VarChar(63)
+    funcName      String          @db.VarChar(63)
+    testCases     String          @db.VarChar(1023) // TODO: change to JSON column type
+    submissions   Submission[]
+    startEvents   StartEvent[]
+    questionStats QuestionStats[]
 
     // TODO: index on timestamps?
     @@index([id])
@@ -65,4 +67,29 @@ model StartEvent {
     questionId Int
 
     @@index([questionId, authorId])
+}
+
+model QuestionStats {
+    id        Int      @id @default(autoincrement())
+    updatedAt DateTime @default(now())
+
+    question       Question @relation(fields: [questionId], references: [id])
+    questionId     Int      @unique
+    top5Scores     Json
+    numSubmissions Int
+
+    @@index([questionId])
+}
+
+model UserStats {
+    id        Int      @id @default(autoincrement())
+    updatedAt DateTime @default(now())
+
+    userId         String @unique @db.VarChar(255)
+    topScore       Int
+    avgScore       Float
+    numSubmissions Int
+    // TODO: current streak (consecutive submissions)
+
+    @@index([userId])
 }

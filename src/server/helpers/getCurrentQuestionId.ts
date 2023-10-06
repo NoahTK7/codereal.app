@@ -7,7 +7,7 @@
 // This allows the user to start/submit previous questions at any time
 export const getCurrentQuestionId = () => {
   // TODO: query Question table
-  return 3
+  return 4
 }
 
 export const getCurrentQuestionExp = (_id: number) => {

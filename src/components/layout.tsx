@@ -82,7 +82,7 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
 export const PageLayout = (props: PropsWithChildren) => {
   const { data: globalStatus } = api.status.global.useQuery(undefined, noRefreshOpts)
   const { data: globalStats } = api.statistics.global.useQuery(undefined, {
-    staleTime: 1000 * 60 // 1 minute
+    refetchInterval: 1000 * 60 * 5 // 5 minutes
   })
 
   return (

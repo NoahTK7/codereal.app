@@ -7,7 +7,6 @@ import { noctisLilac } from '@uiw/codemirror-theme-noctis-lilac'
 export const codeEditorExtensions = [javascript()]
 export const codeEditorTheme = noctisLilac
 
-// TODO: revisit desired refetch behavior
 export const noRefreshOpts = {
   refetchOnMount: false,
   refetchOnWindowFocus: false,
