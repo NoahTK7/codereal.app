@@ -28,7 +28,7 @@ const SignedInHome = () => {
     isError: isPersonalStatusError
   } = api.status.personal.useQuery(undefined, noRefreshOpts)
 
-  if (isPersonalStatusError) return <p>Could not connect to backend service.</p>
+  if (isPersonalStatusError) return <p>Could not connect to backend service. Please refresh the page.</p>
 
   if (isPersonalStatusLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
 

@@ -41,6 +41,7 @@ const Question = ({ questionId }: { questionId: number }) => {
         autoFocus={true}
         readOnly={submitting}
         theme={codeEditorTheme}
+        maxHeight="8rem"
         onChange={(value, _update) => {
           setCode(value)
         }}

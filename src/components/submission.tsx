@@ -68,6 +68,7 @@ export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean
           value={data.code + "\n"}
           extensions={codeEditorExtensions}
           theme={codeEditorTheme}
+          maxHeight="8rem"
           className="shadow-xl my-4"
         />
       </section>
