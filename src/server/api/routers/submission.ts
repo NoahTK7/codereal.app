@@ -56,8 +56,11 @@ export const submissionRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
 
-      void updateQuestionStats(ctx.db, submission) // asynchronous
-      await updateUserStats(ctx.db, submission) // synchronous
+      // TODO: make async (?)
+      await Promise.all([
+        updateQuestionStats(ctx.db, submission),
+        updateUserStats(ctx.db, submission)
+      ])
 
       return {
         submissionId: submission.id,

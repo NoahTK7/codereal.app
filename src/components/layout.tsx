@@ -30,6 +30,16 @@ const Account = () => {
   )
 }
 
+export const GreenSignInButton = () => {
+  return (
+    <>
+      <div className="inline-block bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300">
+        <SignInButton />
+      </div>
+    </>
+  )
+}
+
 const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
   const ctx = api.useContext()
   const router = useRouter()

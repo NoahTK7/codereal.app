@@ -16,6 +16,7 @@ const Question = ({ questionId }: { questionId: number }) => {
       void ctx.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
+      void ctx.statistics.invalidate()
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)
@@ -101,7 +102,7 @@ export const QuestionHandler = (props: PersonalStatusData) => {
   if (props.isStarted) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-xl font-mono font-bold">Today&apos;s Question (#{props.questionId})</p>
+        <p className="text-xl font-mono font-bold">Today&apos;s Question</p>
         <Question questionId={props.questionId} />
         {props.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.startTime} /></p>}
       </div>

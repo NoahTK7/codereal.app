@@ -14,13 +14,13 @@ datasource db {
 model Question {
     id Int @id @default(autoincrement())
 
-    // TODO: add question number (for display)
+    questionNum   Int             @unique
     startsAt      DateTime
     endsAt        DateTime
-    description   String          @db.VarChar(511)
-    funcSig       String          @db.VarChar(63)
-    funcName      String          @db.VarChar(63)
-    testCases     String          @db.VarChar(1023) // TODO: change to JSON column type
+    description   String          @db.VarChar(512)
+    funcSig       String          @db.VarChar(64)
+    funcName      String          @db.VarChar(64)
+    testCases     Json
     submissions   Submission[]
     startEvents   StartEvent[]
     questionStats QuestionStats[]
@@ -33,7 +33,7 @@ model Submission {
     id        Int      @id @default(autoincrement())
     createdAt DateTime @default(now())
 
-    authorId     String           @db.VarChar(255)
+    authorId     String           @db.VarChar(256)
     question     Question         @relation(fields: [questionId], references: [id])
     questionId   Int
     runResult    SubmissionResult
@@ -42,9 +42,9 @@ model Submission {
     solveTime    Int
     execTime     Int
     accuracy     Float
-    errorMessage String?          @db.VarChar(1023)
-    code         String           @db.VarChar(511)
-    executionId  String           @db.VarChar(63)
+    errorMessage String?          @db.VarChar(1024)
+    code         String           @db.VarChar(512)
+    executionId  String           @db.VarChar(64)
 
     @@index([id])
     @@index([questionId, authorId])
@@ -62,7 +62,7 @@ model StartEvent {
     id        Int      @id @default(autoincrement())
     createdAt DateTime @default(now())
 
-    authorId   String   @db.VarChar(255)
+    authorId   String   @db.VarChar(256)
     question   Question @relation(fields: [questionId], references: [id])
     questionId Int
 
@@ -85,7 +85,7 @@ model UserStats {
     id        Int      @id @default(autoincrement())
     updatedAt DateTime @default(now())
 
-    userId         String @unique @db.VarChar(255)
+    userId         String @unique @db.VarChar(256)
     topScore       Int
     avgScore       Float
     numSubmissions Int

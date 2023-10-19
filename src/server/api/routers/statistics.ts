@@ -2,9 +2,10 @@ import { type Submission, type PrismaClient, type Prisma } from "@prisma/client"
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
 import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 import { withTransaction, type TransactionPrismaClient } from "~/server/helpers/transaction";
+import { getUserById } from "./user";
 
 export const statisticsRouter = createTRPCRouter({
-  global: publicProcedure // TODO cache response (5 mins)
+  global: publicProcedure
     .query(async ({ ctx }) => {
       const currentQuestionId = getCurrentQuestionId()
       const questionStats = await ctx.db.questionStats.findFirst({
@@ -16,8 +17,8 @@ export const statisticsRouter = createTRPCRouter({
       return {
         questionId: currentQuestionId,
         numAnswered: questionStats?.numSubmissions ?? 0,
-        topFive: questionStats?.top5Scores ?? 0,
-        lastUpdated: questionStats?.updatedAt ?? 0
+        topFive: questionStats?.top5Scores as LeaderboardEntry[] ?? [],
+        lastUpdated: questionStats?.updatedAt ?? new Date()
       }
     }),
   personal: privateProcedure
@@ -31,7 +32,8 @@ export const statisticsRouter = createTRPCRouter({
       return {
         totalAnswered: userStats?.numSubmissions ?? 0,
         highScore: userStats?.topScore ?? 0,
-        avgScore: userStats?.avgScore ?? 0
+        avgScore: userStats?.avgScore ?? 0,
+        lastUpdated: userStats?.updatedAt ?? new Date()
       }
     })
 });
@@ -78,22 +80,25 @@ export const updateQuestionStats = async (db: PrismaClient, submission: Submissi
 }
 
 const updateQuestionStatsFunc = async (db: TransactionPrismaClient, submission: Submission) => {
-  const statsRecord = await db.questionStats.upsert({
-    where: {
-      questionId: submission.questionId
-    },
-    create: {
-      questionId: submission.questionId,
-      top5Scores: [] as Prisma.JsonArray,
-      numSubmissions: 0
-    },
-    update: {}
-  })
+  const [statsRecord, user] = await Promise.all([
+    db.questionStats.upsert({
+      where: {
+        questionId: submission.questionId
+      },
+      create: {
+        questionId: submission.questionId,
+        top5Scores: [] as Prisma.JsonArray,
+        numSubmissions: 0
+      },
+      update: {}
+    }),
+    getUserById(submission.authorId)
+  ])
 
   const topScores = statsRecord.top5Scores as Prisma.JsonArray
-  topScores.push({ userId: submission.authorId, score: submission.score })
+  topScores.push({ username: user.username, score: submission.score })
   topScores.sort((a, b) => {
-    return (a as LeaderboardEntry).score - (b as LeaderboardEntry).score
+    return (b as LeaderboardEntry).score - (a as LeaderboardEntry).score
   })
   topScores.slice(0, 5)
 
@@ -114,6 +119,6 @@ const updateQuestionStatsFunc = async (db: TransactionPrismaClient, submission: 
 }
 
 type LeaderboardEntry = {
-  userId: string,
+  username: string,
   score: number
 }
