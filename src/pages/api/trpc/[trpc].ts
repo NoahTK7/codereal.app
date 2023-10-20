@@ -34,12 +34,15 @@ export default createNextApiHandler({
 
     if (isSuccess && isQuery) {
       const path = paths[0] ?? ''
-      const config = cacheConfigs[path] ?? { maxage: 0 }
-      return {
-        headers: {
-          'Cache-Control': `max-age=${config.maxage}`,
-          'CDN-Cache-Control': `max-age=${config.maxage}`,
-          'Vercel-CDN-Cache-Control': `max-age=${config.maxage}`,
+      const config = cacheConfigs[path]
+      if (config) {
+        console.log(`[${path}] setting cache time to ${config.maxage}`)
+        return {
+          headers: {
+            'Cache-Control': `max-age=${config.maxage}`,
+            'CDN-Cache-Control': `max-age=${config.maxage}`,
+            'Vercel-CDN-Cache-Control': `max-age=${config.maxage}`,
+          }
         }
       }
     }

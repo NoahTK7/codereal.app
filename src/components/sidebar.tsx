@@ -35,6 +35,7 @@ const PersonalStatsContent = () => {
           <LoadingSpinner size={40} />
         </div>
       }
+      <p></p>
     </>
   )
 }
