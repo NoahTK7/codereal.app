@@ -27,6 +27,7 @@ model Question {
 
     // TODO: index on timestamps?
     @@index([id])
+    @@index([startsAt, endsAt])
 }
 
 model Submission {

@@ -1,24 +1,24 @@
 import { type Submission, type PrismaClient, type Prisma } from "@prisma/client";
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 import { withTransaction, type TransactionPrismaClient } from "~/server/helpers/transaction";
 import { getUserById } from "./user";
+import { getCurrentQuestion } from "./question";
 
 export const statisticsRouter = createTRPCRouter({
   global: publicProcedure
     .query(async ({ ctx }) => {
-      const currentQuestionId = getCurrentQuestionId()
+      const currentQuestion = await getCurrentQuestion(ctx.db)
       const questionStats = await ctx.db.questionStats.findFirst({
         where: {
-          questionId: currentQuestionId
+          questionId: currentQuestion.id
         }
       })
 
       return {
-        questionId: currentQuestionId,
+        questionId: currentQuestion.id,
         numAnswered: questionStats?.numSubmissions ?? 0,
         topFive: questionStats?.top5Scores as LeaderboardEntry[] ?? [],
-        lastUpdated: questionStats?.updatedAt ?? new Date()
+        lastUpdated: new Date()
       }
     }),
   personal: privateProcedure
@@ -33,7 +33,7 @@ export const statisticsRouter = createTRPCRouter({
         totalAnswered: userStats?.numSubmissions ?? 0,
         highScore: userStats?.topScore ?? 0,
         avgScore: userStats?.avgScore ?? 0,
-        lastUpdated: userStats?.updatedAt ?? new Date()
+        lastUpdated: new Date()
       }
     })
 });

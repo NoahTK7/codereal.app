@@ -94,6 +94,7 @@ export const PageLayout = (props: PropsWithChildren) => {
   const { isSignedIn } = useAuth()
   const { data: globalStatus } = api.status.global.useQuery(undefined, noRefreshOpts)
   const { data: globalStats } = api.statistics.global.useQuery(undefined, {
+    ...noRefreshOpts,
     refetchInterval: 1000 * 60 * 5 // 5 minutes
   })
 

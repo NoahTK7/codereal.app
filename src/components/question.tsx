@@ -16,7 +16,7 @@ const Question = ({ questionId }: { questionId: number }) => {
       void ctx.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
-      void ctx.statistics.invalidate()
+      void ctx.statistics.invalidate() // not needed if updating stats becomes async
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)

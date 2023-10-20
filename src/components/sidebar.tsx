@@ -10,7 +10,7 @@ dayjs.extend(relativeTime)
 export const PersonalStats = () => {
   const { isSignedIn } = useAuth()
   return (
-    <div className={`flex flex-col ${isSignedIn ? "justify-between" : ""} px-2 py-2 space-y-2 h-[14rem] text-center bg-slate-100`}>
+    <div className={`flex flex-col ${isSignedIn ? "justify-between" : ""} px-2 py-2 h-[14rem] text-center bg-slate-100`}>
       <p className="text-lg font-mono font-bold">Personal Stats</p>
       {isSignedIn
         ? <PersonalStatsContent />
@@ -35,7 +35,6 @@ const PersonalStatsContent = () => {
           <LoadingSpinner size={40} />
         </div>
       }
-      {data ? <LastUpdatedText timestamp={data.lastUpdated} /> : <p></p>}
     </>
   )
 }

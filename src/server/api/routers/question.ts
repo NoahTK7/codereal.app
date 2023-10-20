@@ -3,7 +3,6 @@ import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
 import { filterQuestionForClient } from "~/server/helpers/filter";
-import { getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
 
 export const getQuestionById = async (db: PrismaClient, qid: number) => {
   const question = await db.question.findFirst({
@@ -21,7 +20,8 @@ export const questionRouter = createTRPCRouter({
   get: privateProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (input.id > getCurrentQuestionId())
+      const currentQuestion = await getCurrentQuestion(ctx.db)
+      if (input.id > currentQuestion.id)
         throw new TRPCError({ code: "NOT_FOUND" })
       const question = await getQuestionById(ctx.db, input.id)
       return filterQuestionForClient(question)
@@ -29,7 +29,8 @@ export const questionRouter = createTRPCRouter({
   start: privateProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      if (input.questionId > getCurrentQuestionId())
+      const currentQuestion = await getCurrentQuestion(ctx.db)
+      if (input.questionId > currentQuestion.id)
         throw new TRPCError({ code: "NOT_FOUND" })
 
       if (await isQuestionAlreadyStartedByUser(ctx.db, ctx.userId, input.questionId))
@@ -63,4 +64,26 @@ const isQuestionAlreadyStartedByUser = async (db: PrismaClient, userId: string, 
     }
   })
   return num > 0
+}
+
+// This function is the source of truth
+// The current question id is passed to the client via "status.personal" proc
+// Otherwise, this function should only be used to validate that future questions are not being accessed/referenced
+// All other procs that need a question id must get the id from the client
+// This allows the user to start/submit previous questions at any time
+export const getCurrentQuestion = async (db: PrismaClient) => {
+  const question = await db.question.findFirst({
+    where: {
+      startsAt: {
+        lt: new Date()
+      },
+      endsAt: {
+        gt: new Date()
+      }
+    }
+  })
+
+  if (!question) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
+
+  return question
 }

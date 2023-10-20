@@ -1,5 +1,5 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-import { getCurrentQuestionExp, getCurrentQuestionId } from "~/server/helpers/getCurrentQuestionId";
+import { getCurrentQuestion } from "./question";
 
 export type PersonalStatusData = {
   isStarted: boolean,
@@ -11,20 +11,20 @@ export type PersonalStatusData = {
 
 export const statusRouter = createTRPCRouter({
   global: publicProcedure // TODO cache response (5 mins)
-    .query(() => {
-      const currentQuestionId = getCurrentQuestionId()
+    .query(async ({ ctx }) => {
+      const currentQuestion = await getCurrentQuestion(ctx.db)
       return {
-        questionExpiration: getCurrentQuestionExp(currentQuestionId),
+        questionExpiration: currentQuestion.endsAt
       }
     }),
   personal: privateProcedure
     .query(async ({ ctx }): Promise<PersonalStatusData> => {
-      const currentQuestionId = getCurrentQuestionId()
+      const currentQuestion = await getCurrentQuestion(ctx.db)
 
       const startEvent = await ctx.db.startEvent.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: currentQuestionId
+          questionId: currentQuestion.id
         }
       })
 
@@ -32,7 +32,7 @@ export const statusRouter = createTRPCRouter({
         return {
           isStarted: false,
           isCompleted: false,
-          questionId: currentQuestionId,
+          questionId: currentQuestion.id,
           submissionId: null,
           startTime: null
         } satisfies PersonalStatusData
@@ -41,7 +41,7 @@ export const statusRouter = createTRPCRouter({
       const submission = await ctx.db.submission.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: currentQuestionId
+          questionId: currentQuestion.id
         },
         select: {
           id: true
@@ -53,7 +53,7 @@ export const statusRouter = createTRPCRouter({
         startTime: startEvent.createdAt,
         isCompleted: submission != null,
         submissionId: submission?.id ?? null,
-        questionId: currentQuestionId
+        questionId: currentQuestion.id
       } satisfies PersonalStatusData
     })
 });
