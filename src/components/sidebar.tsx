@@ -52,7 +52,7 @@ const LastUpdatedText = ({ timestamp }: { timestamp: Date }) => {
   }, []);
 
   return (
-    <p className="text-sm text-gray-500">Last updated: {dayjs(timestamp).fromNow()}</p>
+    <p className="text-sm text-gray-500">Last updated: {dayjs(timestamp).subtract(5, 's').fromNow()}</p>
   )
 }
 

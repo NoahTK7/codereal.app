@@ -25,7 +25,6 @@ model Question {
     startEvents   StartEvent[]
     questionStats QuestionStats[]
 
-    // TODO: index on timestamps?
     @@index([id])
     @@index([startsAt, endsAt])
 }
@@ -90,7 +89,7 @@ model UserStats {
     topScore       Int
     avgScore       Float
     numSubmissions Int
-    // TODO: current streak (consecutive submissions)
+    // improvement: current streak (consecutive submissions)
 
     @@index([userId])
 }

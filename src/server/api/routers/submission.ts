@@ -56,7 +56,7 @@ export const submissionRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
 
-      // TODO: make async (?)
+      // improvement: make async (?)
       await Promise.all([
         updateQuestionStats(ctx.db, submission),
         updateUserStats(ctx.db, submission)

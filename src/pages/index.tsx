@@ -33,7 +33,7 @@ const SignedInHome = () => {
 
   if (isPersonalStatusLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
 
-  // TODO: use suspense boundary (?)
+  // improvement: use suspense boundary (?)
   return <QuestionHandler {...personalStatusData} />
 }
 

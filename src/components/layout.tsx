@@ -7,7 +7,7 @@ import { LinkedInLogoIcon } from '@radix-ui/react-icons';
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { noRefreshOpts } from "./constants";
+import { noRefreshOpts, skipBatchOpts } from "./constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
 
 const Account = () => {
@@ -92,7 +92,10 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
 
 export const PageLayout = (props: PropsWithChildren) => {
   const { isSignedIn } = useAuth()
-  const { data: globalStatus } = api.status.global.useQuery(undefined, noRefreshOpts)
+  const { data: globalStatus } = api.status.global.useQuery(undefined, {
+    ...noRefreshOpts,
+    ...skipBatchOpts
+  })
   const { data: globalStats } = api.statistics.global.useQuery(undefined, {
     ...noRefreshOpts,
     refetchInterval: 1000 * 60 * 5 // 5 minutes

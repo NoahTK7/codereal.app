@@ -13,3 +13,12 @@ export const noRefreshOpts = {
   refetchOnReconnect: false,
   retry: 2,
 }
+
+// used for isolating calls that will be cached on edge
+export const skipBatchOpts = {
+  trpc: {
+    context: {
+      skipBatch: true
+    }
+  }
+}
