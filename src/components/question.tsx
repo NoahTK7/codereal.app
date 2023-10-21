@@ -91,7 +91,7 @@ export const QuestionHandler = (props: PersonalStatusData) => {
   if (props.isCompleted) {
     return (
       <>
-        <p>You&apos;ve already completed today&apos;s challenge!</p>
+        <p>You&apos;ve already completed today&apos;s question!</p>
         {props.submissionId
           ? <SubmissionDisplay id={props.submissionId} />
           : <p>There was an error retrieving your submission.</p>}

@@ -2,13 +2,14 @@ import { SignInButton, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/n
 import Head from "next/head";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
-import { api } from "~/utils/api";
+import { api, getBaseUrl } from "~/utils/api";
 import { LinkedInLogoIcon } from '@radix-ui/react-icons';
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { noRefreshOpts, skipBatchOpts } from "./constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
+import { MetaHeadEmbed } from "@phntms/react-share";
 
 const Account = () => {
   return (
@@ -104,11 +105,25 @@ export const PageLayout = (props: PropsWithChildren) => {
   return (
     <>
       <Head>
-        <title>CodeReal</title>
-        <meta name="description" content="CodeReal, created by Noah Kurrack" />
-        {/* TODO: replace favicon */}
+        <MetaHeadEmbed
+          render={(meta: React.ReactNode) => <>{meta}</>}
+          siteTitle="CodeReal"
+          titleTemplate="[siteTitle]"
+          description="Daily coding question. Created by Noah Kurrack."
+          baseSiteUrl={getBaseUrl()}
+          keywords={["daily", "coding", "question"]}
+          imageUrl={`${getBaseUrl()}/codereal-og-preview.png`}
+          imageWidth={2400}
+          imageHeight={1260}
+          imageAlt="CodeReal preview"
+          twitter={{
+            cardSize: "large",
+            siteUsername: "@noahtk7",
+            creatorUsername: "@noahtk7",
+          }}
+        />
+        <title>CodeReal - Daily coding question</title>
         <link rel="icon" href="/favicon.ico" />
-        {/* TODO: add more metadata, specifically opengraph vals */}
       </Head>
 
       <div className="flex flex-col min-h-screen">
