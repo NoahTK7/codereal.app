@@ -10,12 +10,6 @@ const config = {
   images: {
     domains: ["images.clerk.dev"],
   },
-
-  /**
-   * If you are using `appDir` then you must comment the below `i18n` config out.
-   *
-   * @see https://github.com/vercel/next.js/issues/41980
-   */
   i18n: {
     locales: ["en"],
     defaultLocale: "en",
@@ -27,6 +21,11 @@ const config = {
     ignoreDuringBuilds: true,
   },
   swcMinify: true,
+  experimental: {
+    outputFileTracingIncludes: {
+      '/api/trpc/[trpc]': ['node_modules/v8-sandbox/dist/sandbox/*.js'],
+    },
+  }
 };
 
 export default config;
