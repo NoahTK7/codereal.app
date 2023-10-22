@@ -2,13 +2,6 @@ import { type Question, SubmissionResult } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import Sandbox from 'v8-sandbox';
 
-const sandbox = new Sandbox({
-  httpEnabled: false,
-  timersEnabled: false,
-  memory: 8,
-  // argv: ['--untrusted-code-mitigations']
-});
-
 const TIMEOUT = 500 //ms
 export type CodeExecutionResult = {
   runResult: SubmissionResult,
@@ -38,11 +31,18 @@ setResult({value: result, error: null})
 
   const executionId = randomUUID()
 
-  const startTime = process.hrtime()
-  const res = await sandbox.execute({ code: runnerCode, timeout: TIMEOUT, context: { test: "123" } });
-  const execTime = parseHrtimeToMilliseconds(process.hrtime(startTime));
+  const sandbox = new Sandbox({
+    httpEnabled: false,
+    timersEnabled: false,
+    memory: 8,
+    // argv: ['--untrusted-code-mitigations']
+  })
 
-  await sandbox.shutdown();
+  const startTime = process.hrtime()
+  const res = await sandbox.execute({ code: runnerCode, timeout: TIMEOUT })
+  const execTime = parseHrtimeToMilliseconds(process.hrtime(startTime))
+
+  await sandbox.shutdown()
   console.log(`execution ${executionId} result: ${JSON.stringify(res)}`)
 
   let runResult: SubmissionResult = SubmissionResult.UNKNOWN
