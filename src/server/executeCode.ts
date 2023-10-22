@@ -20,7 +20,7 @@ export type CodeExecutionResult = {
 
 export const executeCode = async (question: Question, userCode: string): Promise<CodeExecutionResult> => {
   const runnerCode = `
-const testCases = ${question.testCases};
+const testCases = ${JSON.stringify(question.testCases)};
 
 function runTests(func, testCases) {
   let successCount = 0;

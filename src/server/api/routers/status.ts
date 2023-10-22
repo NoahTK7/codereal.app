@@ -10,7 +10,7 @@ export type PersonalStatusData = {
 }
 
 export const statusRouter = createTRPCRouter({
-  global: publicProcedure // TODO cache response (5 mins)
+  global: publicProcedure
     .query(async ({ ctx }) => {
       const currentQuestion = await getCurrentQuestion(ctx.db)
       return {
