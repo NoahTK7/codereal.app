@@ -95,12 +95,12 @@ const updateQuestionStatsFunc = async (db: TransactionPrismaClient, submission: 
     getUserById(submission.authorId)
   ])
 
-  const topScores = statsRecord.top5Scores as Prisma.JsonArray
+  let topScores = statsRecord.top5Scores as Prisma.JsonArray
   topScores.push({ username: user.username, score: submission.score })
   topScores.sort((a, b) => {
     return (b as LeaderboardEntry).score - (a as LeaderboardEntry).score
   })
-  topScores.slice(0, 5)
+  topScores = topScores.slice(0, 5)
 
   try {
     await db.questionStats.update({
