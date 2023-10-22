@@ -1,0 +1,14 @@
+diff --git a/node_modules/v8-sandbox/dist/host/sandbox.js b/node_modules/v8-sandbox/dist/host/sandbox.js
+index 78cf1e6..192b121 100644
+--- a/node_modules/v8-sandbox/dist/host/sandbox.js
++++ b/node_modules/v8-sandbox/dist/host/sandbox.js
+@@ -246,5 +246,9 @@ class Sandbox {
+         }
+     }
+ }
++if (process.argv[2] === 'child') {
++    require('../sandbox/runtime')
++    require('../sandbox/worker')
++}
+ exports.default = Sandbox;
+ //# sourceMappingURL=sandbox.js.map
