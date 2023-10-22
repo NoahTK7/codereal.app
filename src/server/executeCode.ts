@@ -11,6 +11,13 @@ export type CodeExecutionResult = {
   executionId: string
 }
 
+const sandbox = new Sandbox({
+  httpEnabled: false,
+  timersEnabled: false,
+  memory: 8,
+  // argv: ['--untrusted-code-mitigations']
+})
+
 export const executeCode = async (question: Question, userCode: string): Promise<CodeExecutionResult> => {
   const runnerCode = `
 const testCases = ${JSON.stringify(question.testCases)};
@@ -30,13 +37,6 @@ setResult({value: result, error: null})
 `
 
   const executionId = randomUUID()
-
-  const sandbox = new Sandbox({
-    httpEnabled: false,
-    timersEnabled: false,
-    memory: 8,
-    // argv: ['--untrusted-code-mitigations']
-  })
 
   const startTime = process.hrtime()
   const res = await sandbox.execute({ code: runnerCode, timeout: TIMEOUT })
