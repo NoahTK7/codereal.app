@@ -23,7 +23,10 @@ const config = {
   swcMinify: true,
   experimental: {
     outputFileTracingIncludes: {
-      '/api/trpc/[trpc]': ['node_modules/v8-sandbox/dist/sandbox/*.js'],
+      '/api/trpc/[trpc]': [
+        'node_modules/v8-sandbox/dist/sandbox/*.js',
+        'node_modules/bindings/bindings.js'
+      ],
     },
   }
 };
