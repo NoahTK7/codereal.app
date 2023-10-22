@@ -1,12 +1,8 @@
 import { type Question, SubmissionResult } from '@prisma/client';
 import { randomUUID } from 'crypto';
 import Sandbox from 'v8-sandbox';
-import Worker from 'v8-sandbox/dist/sandbox/worker'
-
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const _ = () => {
-  new Worker()
-}
+require('v8-sandbox/dist/sandbox/runtime')
+require('v8-sandbox/dist/sandbox/worker')
 
 const TIMEOUT = 500 //ms
 export type CodeExecutionResult = {
