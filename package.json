@@ -6,7 +6,7 @@
     "build": "next build",
     "db:push": "prisma db push",
     "dev": "next dev",
-    "postinstall": "prisma generate",
+    "postinstall": "prisma generate && patch-package",
     "lint": "next lint",
     "start": "next start",
     "typecheck": "tsc --noEmit"
@@ -27,6 +27,7 @@
     "@uiw/react-codemirror": "^4.21.18",
     "dayjs": "^1.11.10",
     "next": "^13.5.6",
+    "patch-package": "^8.0.0",
     "react": "18.2.0",
     "react-collapsed": "^4.0.4",
     "react-dom": "18.2.0",
