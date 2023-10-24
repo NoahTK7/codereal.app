@@ -71,6 +71,7 @@ export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean
           maxHeight="8rem"
           className="shadow-xl my-4"
         />
+        {/* improvement: add share score button */}
       </section>
     </div>
   )

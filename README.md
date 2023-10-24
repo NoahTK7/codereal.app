@@ -1,30 +1,35 @@
-<!-- TODO: write README -->
+# codereal.app
 
-# Create T3 App
+CodeReal is an app that challenges users to solve a daily coding question.
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+## Tech used
 
-## What's next? How do I make an app with this?
+This is a T3 Stack project, bootstrapped with [create-t3-app](https://create.t3.gg/).
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+Full stack:
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+- [Next.js](https://nextjs.org) for React framework
+- [Clerk](https://clerk.com/) for authentication
+- [Prisma](https://prisma.io) for database ORM
+- [PlanetScale](https://planetscale.com/) for serverless database (MySQL)
+- [Tailwind CSS](https://tailwindcss.com) for frontend styling
+- [tRPC](https://trpc.io) for backend API
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+## Inspiration
 
-## Learn More
+I had this idea for this app last year (2022) during the height of the initial [BeReal](https://bereal.com/) craze... BeReal but for code.
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+This app is also inspired by:
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+- [code golf](https://www.reddit.com/r/codegolf/)
+- [bnomial](https://bnomial.com)
+- [Wordle](https://www.nytimes.com/games/wordle/index.html)
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+## Future work
 
-## How do I deploy this?
-
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+- share score button (mobile and web)
+- add Google as a third-party login
+- per-question page where you can solve past questions individually
+  - accessible via a past questions page with list, similar to current past submissions list page
+- consolidate loading states using React's new suspense boundaries (it's a bit of a waterfall at the moment)
+- add a "current streak" (i.e. questions answered in a row) to user stats

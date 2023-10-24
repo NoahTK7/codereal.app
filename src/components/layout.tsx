@@ -175,7 +175,6 @@ export const PageLayout = (props: PropsWithChildren) => {
                 : 'Loading...'}
             </div>
           </div>
-          {/* TODO: share link button (copy to clipboard/) */}
           <div className="flex justify-between">
             <div className="max-w-7xl px-4 py-2 justify-left">
               <p className="align-middle">© 2023 Noah Kurrack. All rights reserved.</p>
