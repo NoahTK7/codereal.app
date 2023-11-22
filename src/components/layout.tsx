@@ -15,14 +15,17 @@ const Account = () => {
   return (
     <>
       <SignedIn>
-        <UserButton appearance={{
-          elements: {
-            userButtonAvatarBox: {
-              width: 56,
-              height: 56
+        <UserButton
+          appearance={{
+            elements: {
+              userButtonAvatarBox: {
+                width: 56,
+                height: 56
+              }
             }
-          }
-        }} />
+          }}
+          afterSignOutUrl="/"
+        />
       </SignedIn>
       <SignedOut>
         <SignInButton />

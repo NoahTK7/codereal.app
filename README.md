@@ -48,6 +48,6 @@ This app is also inspired by:
 
 - add more languages!
 
-# Copyright
+---
 
-(C) 2023 Noah Kurrack. All rights reserved.
+Copyright 2023 Noah Kurrack. All rights reserved.
