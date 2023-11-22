@@ -13,6 +13,7 @@ export const filterUserForClient = (user: User) => {
 export const filterQuestionForClient = (question: Question) => {
   return {
     id: question.id,
+    title: question.title,
     questionDescription: question.description,
     funcSignature: question.funcSig,
   }

@@ -15,6 +15,7 @@ model Question {
     id Int @id @default(autoincrement())
 
     questionNum   Int             @unique
+    title         String          @default("") @db.VarChar(128)
     startsAt      DateTime
     endsAt        DateTime
     description   String          @db.VarChar(512)
