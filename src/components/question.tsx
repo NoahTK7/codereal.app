@@ -34,7 +34,7 @@ const Question = ({ questionId }: { questionId: number }) => {
 
   return (
     <div>
-      <p className="text-xl mb-4">Question #{data.id}</p>
+      <p className="text-xl mb-4">Question #{data.id}: {data.title}</p>
       <p>{data.questionDescription}</p>
       <ReactCodeMirror
         value={code}
