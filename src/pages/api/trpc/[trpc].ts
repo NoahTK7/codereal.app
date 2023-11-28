@@ -1,6 +1,5 @@
 import { createNextApiHandler } from "@trpc/server/adapters/next";
 
-import { env } from "~/env.mjs";
 import { appRouter } from "~/server/api/appRouter";
 import { createTRPCContext } from "~/server/api/trpc";
 
@@ -18,14 +17,11 @@ const cacheConfigs: CacheConfigs = {
 export default createNextApiHandler({
   router: appRouter,
   createContext: createTRPCContext,
-  onError:
-    env.NODE_ENV === "development"
-      ? ({ path, error }) => {
-        console.error(
-          `❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`
-        );
-      }
-      : undefined,
+  onError: ({ error }) => {
+    console.error(
+      `tRPC error: ${error.message}`
+    );
+  },
   responseMeta({ paths, type, errors }) {
     if (!paths || paths.length !== 1) return {}
 
@@ -36,7 +32,7 @@ export default createNextApiHandler({
       const path = paths[0] ?? ''
       const config = cacheConfigs[path]
       if (config) {
-        console.log(`[${path}] setting cache time to ${config.maxage}`)
+        console.log(`setting cache time to ${config.maxage}`)
         return {
           headers: {
             'Cache-Control': `max-age=${config.maxage}`,

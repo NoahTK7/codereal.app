@@ -1,7 +1,8 @@
+import { withAxiom } from 'next-axiom';
 await import("./src/env.mjs");
 
 /** @type {import("next").NextConfig} */
-const config = {
+const config = withAxiom({
   reactStrictMode: true,
   images: {
     domains: ["images.clerk.dev"],
@@ -17,6 +18,6 @@ const config = {
     ignoreDuringBuilds: true,
   },
   swcMinify: true,
-};
+});
 
 export default config;
