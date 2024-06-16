@@ -6,10 +6,10 @@ import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { LoadingSpinner } from "./loading";
 
 type SubmissionItem = RouterOutputs['submission']['getInfinite']['submissions'][number]
-export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean }) => {
+export const Submission = ({ data, solo: isSolo }: { data: SubmissionItem, solo: boolean }) => {
   // eslint-disable-next-line @typescript-eslint/unbound-method
   const { getCollapseProps, getToggleProps, isExpanded } = useCollapse({
-    defaultExpanded: solo
+    defaultExpanded: isSolo
   })
 
   const statusColors = {
@@ -23,9 +23,9 @@ export const Submission = ({ data, solo }: { data: SubmissionItem, solo: boolean
 
   return (
     <div className="space-y-4 py-4 px-2">
-      <div {...getToggleProps()} className="flex justify-between">
+      <div {...getToggleProps({ disabled: isSolo })} className="flex justify-between">
         <p className="space-x-2 inline-block"><span className="text-xl">Question #{data.questionId} Submission</span> <span className={`font-bold text-md ${statusColor}`}>({data.runResult})</span></p>
-        {!solo &&
+        {!isSolo &&
           <div className="flex-right">
             {isExpanded ? <ChevronDownIcon height={24} width={24} /> : <ChevronRightIcon height={24} width={24} />}
           </div>}
