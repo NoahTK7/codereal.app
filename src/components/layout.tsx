@@ -131,7 +131,7 @@ export const PageLayout = (props: PropsWithChildren) => {
 
       <div className="flex flex-col min-h-screen">
         <nav className="bg-slate-200">
-          <div className="mx-auto max-w-7xl px-2 lg:px-8">
+          <div className="mx-auto px-2 lg:px-8">
             <div className="relative flex h-16 items-center justify-between">
               <div className="flex flex-1 items-center justify-start sm:items-stretch space-x-4">
                 <div className="flex flex-shrink-0 items-center">
