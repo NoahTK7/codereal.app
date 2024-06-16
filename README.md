@@ -4,7 +4,7 @@ CodeReal is an app that challenges users to solve a daily coding question.
 
 ## Background
 
-I had this idea for this app last year (2022) during the height of the initial [BeReal](https://bereal.com/) craze (at least in my circles)... BeReal but for code.
+I had this idea for this app a while back (2022) during the height of the initial [BeReal](https://bereal.com/) craze (at least in my circles)... BeReal but for code.
 
 I set out to create the app with Python and React on AWS Lambda. I quickly found that building a severless application beyond a few functions was quite cumbersome without a deployment framework. I attempted to write IaC for everything (functions, DynamDB tables, IAM roles, etc) with CloudFormation, but quickly got burned out and never finished the applicaiton.
 
@@ -25,7 +25,7 @@ Full stack:
 - [Next.js](https://nextjs.org) for React framework
 - [Clerk](https://clerk.com/) for authentication
 - [Prisma](https://prisma.io) for database ORM
-- [PlanetScale](https://planetscale.com/) for serverless database (MySQL)
+- [Xata](https://xata.io/) for serverless database (Postgres)
 - [Tailwind CSS](https://tailwindcss.com) for frontend styling
 - [tRPC](https://trpc.io) for backend API
 
@@ -42,8 +42,8 @@ This app is also inspired by:
   - accessible via a past questions page with list, similar to current past submissions list page
 - consolidate loading states using React's new suspense boundaries (it's a bit of a waterfall at the moment)
 - add a "current streak" (i.e. questions answered in a row) to user stats
-- add more languages!
+- add more programming languages!
 
 ---
 
-Copyright 2024 Noah Kurrack. All rights reserved.
+Copyright &copy; 2024 Noah Kurrack. All rights reserved.
