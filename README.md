@@ -46,4 +46,4 @@ This app is also inspired by:
 
 ---
 
-Copyright 2023 Noah Kurrack. All rights reserved.
+Copyright 2024 Noah Kurrack. All rights reserved.
