@@ -1,4 +1,4 @@
-import type { User } from "@clerk/nextjs/api";
+import type { User } from "@clerk/nextjs/server";
 import type { Question } from "@prisma/client";
 
 export const filterUserForClient = (user: User) => {
