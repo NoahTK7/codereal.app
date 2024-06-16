@@ -4,7 +4,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import "~/styles/globals.css";
 import { PageLayout } from "~/components/layout";
 import { Toaster } from "react-hot-toast";
-export { reportWebVitals } from 'next-axiom'
+import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
@@ -13,6 +13,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
       <PageLayout>
         <Component {...pageProps} />
       </PageLayout>
+      <SpeedInsights />
     </ClerkProvider>
   )
 };
