@@ -94,3 +94,9 @@ model UserStats {
 
     @@index([userId])
 }
+
+model RateLimiter {
+    key    String    @id
+    points Int
+    expire DateTime?
+}
