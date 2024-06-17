@@ -8,22 +8,32 @@ import { type PersonalStatusData } from "~/server/api/routers/status"
 import toast from "react-hot-toast"
 
 const Question = ({ questionId }: { questionId: number }) => {
+  const [isSubmitTimeout, setIsSubmitTimeout] = useState(false)
   const { data, isLoading, isError } = api.question.get.useQuery({ id: questionId }, noRefreshOpts)
-  const { mutate: submitQuestion, isLoading: submitting } = api.submission.submit.useMutation({
-    onSuccess: () => {
+  const { mutate: submitQuestion } = api.submission.submit.useMutation({
+    onSuccess: (data) => {
+      if (data.error) {
+        toast.error(`Execution error: ${data.execResult.errorMessage ?? 'unknown'}`, {
+          duration: 5000
+        })
+        return
+      }
       toast.success('Your submission was recorded!')
-      void ctx.status.personal.invalidate()
-      void ctx.submission.invalidate(undefined, {
+      void utils.status.personal.invalidate()
+      void utils.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
-      void ctx.statistics.invalidate() // not needed if updating stats becomes async
+      void utils.statistics.invalidate() // not needed if updating stats becomes async
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)
+    },
+    onSettled: () => {
+      setTimeout(() => setIsSubmitTimeout(false), 5000) // 5 second cooldown after submitting
     }
   })
   const [code, setCode] = useState<string>("")
-  const ctx = api.useContext()
+  const utils = api.useUtils()
 
   if (isLoading) return <p>Question loading...</p>
 
@@ -40,7 +50,7 @@ const Question = ({ questionId }: { questionId: number }) => {
         value={code}
         extensions={codeEditorExtensions}
         autoFocus={true}
-        readOnly={submitting}
+        readOnly={isSubmitTimeout}
         theme={codeEditorTheme}
         maxHeight="8rem"
         onChange={(value, _update) => {
@@ -49,10 +59,13 @@ const Question = ({ questionId }: { questionId: number }) => {
         className="shadow-xl mt-4"
       />
       <button
-        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300 mt-8"
+        className="bg-green-600 hover:bg-green-700 disabled:bg-slate-300 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300 mt-8"
         type="submit"
-        onClick={() => submitQuestion({ questionId, code })}
-        disabled={submitting}
+        onClick={() => {
+          setIsSubmitTimeout(true)
+          submitQuestion({ questionId, code })
+        }}
+        disabled={isSubmitTimeout}
       >
         Submit
       </button>
@@ -78,10 +91,10 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
 }
 
 export const QuestionHandler = (props: PersonalStatusData) => {
-  const ctx = api.useContext()
+  const utils = api.useUtils()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
     onSuccess: () => {
-      void ctx.status.personal.invalidate()
+      void utils.status.personal.invalidate()
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)
