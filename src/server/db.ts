@@ -25,8 +25,9 @@ if (env.NODE_ENV === 'development') globalThis.prismaGlobal = db
 db.$on('query', e => {
   if (env.NODE_ENV !== 'development') {
     axiom.info("query", { ...e })
+  } else {
+    console.log(e)
   }
-  console.log(e)
 })
 
 db.$on('info', e => {
