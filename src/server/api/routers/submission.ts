@@ -30,12 +30,15 @@ export const submissionRouter = createTRPCRouter({
 
       const question = await getQuestionById(ctx.db, input.questionId)
 
-      const [solveTime, execResult] = await Promise.all([
-        getSolveTime(ctx.db, ctx.userId, input.questionId),
-        executeCode(question, input.code)
-      ])
-      const codeLength = getCodeLength(question, input.code)
+      const execResult = await executeCode(question, input.code)
+      if (execResult.errorMessage) return {
+        error: true,
+        submissionId: -1,
+        execResult
+      }
 
+      const solveTime = await getSolveTime(ctx.db, ctx.userId, input.questionId)
+      const codeLength = getCodeLength(question, input.code)
       const score = calculateScore(execResult, solveTime, codeLength)
 
       let submission
@@ -63,6 +66,7 @@ export const submissionRouter = createTRPCRouter({
       ])
 
       return {
+        error: false,
         submissionId: submission.id,
         execResult
       }
