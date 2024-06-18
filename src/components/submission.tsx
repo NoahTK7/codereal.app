@@ -1,6 +1,6 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { api, type RouterOutputs } from "~/utils/api";
-import { codeEditorExtensions, codeEditorTheme, noRefreshOpts } from "./constants";
+import { codeEditorExtensions, codeEditorTheme, noRefreshOpts, statusColors } from "./constants";
 import { useCollapse } from "react-collapsed";
 import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
 import { LoadingSpinner } from "./loading";
@@ -12,13 +12,6 @@ export const Submission = ({ data, solo: isSolo }: { data: SubmissionItem, solo:
     defaultExpanded: isSolo
   })
 
-  const statusColors = {
-    ERROR: "text-rose-700",
-    TIMEOUT: "text-rose-700",
-    INCORRECT: "text-yellow-500",
-    CORRECT: "text-emerald-600",
-    UNKNOWN: "text-slate-500"
-  };
   const statusColor = statusColors[data.runResult] || "";
 
   return (

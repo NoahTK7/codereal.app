@@ -53,7 +53,48 @@ export const questionRouter = createTRPCRouter({
         console.error("submissionRouter/submit", e)
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
-    })
+    }),
+  getInfinite: privateProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(20).nullish(),
+        cursor: z.number().nullish()
+      }),
+    )
+    .query(async ({ ctx, input }) => {
+      const limit = input.limit ?? 10
+      const { cursor } = input
+      const questions = await ctx.db.question.findMany({
+        take: limit + 1, // take an extra at end to use as next cursor
+        select: {
+          id: true,
+          questionNum: true,
+          title: true,
+          startsAt: true,
+          submissions: {
+            where: {
+              authorId: ctx.userId
+            },
+            select: {
+              runResult: true
+            }
+          }
+        },
+        cursor: cursor ? { id: cursor } : undefined,
+        orderBy: {
+          questionNum: 'desc',
+        },
+      })
+      let nextCursor: typeof cursor | undefined = undefined
+      if (questions.length > limit) {
+        const nextItem = questions.pop()
+        nextCursor = nextItem!.id
+      }
+      return {
+        questions,
+        nextCursor,
+      };
+    }),
 });
 
 const isQuestionAlreadyStartedByUser = async (db: PrismaClient, userId: string, questionId: number) => {
