@@ -3,7 +3,6 @@ import Head from "next/head";
 import Link from "next/link";
 import { type PropsWithChildren } from "react";
 import { api, getBaseUrl } from "~/utils/api";
-import { LinkedInLogoIcon } from '@radix-ui/react-icons';
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
@@ -167,8 +166,8 @@ export const PageLayout = (props: PropsWithChildren) => {
         </main>
 
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
-          <div className="flex justify-center ">
-            <div className="max-w-7xl px-4 py-2 font-mono">
+          <div className="px-4 py-2 font-mono flex justify-center">
+            <div className="text-center">
               {globalStatus && globalStats ? (
                 <>
                   <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
@@ -178,20 +177,14 @@ export const PageLayout = (props: PropsWithChildren) => {
                 : 'Loading...'}
             </div>
           </div>
-          <div className="flex justify-between">
-            <div className="max-w-7xl px-4 py-2 justify-left">
-              <p className="align-middle">Copyright © {new Date().getFullYear()} Noah Kurrack. All rights reserved.</p>
-            </div>
-            <div className="max-w-7xl px-4 py-2 justify-right items-center">
-              <div className="hover:bg-white duration-200 px-1 py-1 rounded-sm">
-                <a
-                  href="https://www.linkedin.com/in/noahkurrack/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <LinkedInLogoIcon height={20} width={20} />
-                </a>
-              </div>
+          <div className="px-4 py-2 flex justify-center">
+            <div>
+              <p className="align-middle">Copyright © {new Date().getFullYear()} <a
+                href="https://www.linkedin.com/in/noahkurrack/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >Noah Kurrack</a>. All rights reserved.</p>
             </div>
           </div>
         </footer>
