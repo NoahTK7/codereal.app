@@ -1,7 +1,7 @@
 import { SignInButton, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/nextjs";
 import Head from "next/head";
 import Link from "next/link";
-import { type PropsWithChildren } from "react";
+import { createContext, type PropsWithChildren } from "react";
 import { api, getBaseUrl } from "~/utils/api";
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
@@ -9,6 +9,7 @@ import { useRouter } from "next/navigation";
 import { noRefreshOpts, skipBatchOpts } from "./constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
 import { MetaHeadEmbed } from "@phntms/react-share";
+import { type PublicQuestion } from "~/server/helpers/filter";
 
 const Account = () => {
   return (
@@ -44,7 +45,7 @@ export const GreenSignInButton = () => {
 }
 
 const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
-  const ctx = api.useContext()
+  const ctx = api.useUtils()
   const router = useRouter()
 
   const displayNewQuestionAvailable = () => {
@@ -93,6 +94,8 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
   return <span>Next question in {`${remainingTime.hours}h ${remainingTime.minutes}m ${remainingTime.seconds}s`}.</span>
 }
 
+export const GlobalStatusContext = createContext<PublicQuestion | undefined>(undefined)
+
 export const PageLayout = (props: PropsWithChildren) => {
   const { isSignedIn } = useAuth()
   const { data: globalStatus } = api.status.global.useQuery(undefined, {
@@ -105,7 +108,7 @@ export const PageLayout = (props: PropsWithChildren) => {
   })
 
   return (
-    <>
+    <GlobalStatusContext.Provider value={globalStatus}>
       <Head>
         <MetaHeadEmbed
           render={(meta: React.ReactNode) => <>{meta}</>}
@@ -138,7 +141,7 @@ export const PageLayout = (props: PropsWithChildren) => {
                 </div>
                 {isSignedIn &&
                   <div className="flex space-x-4 items-center">
-                    <Link href="/past-submissions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Submissions</Link>
+                    <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
                   </div>
                 }
               </div>
@@ -171,7 +174,7 @@ export const PageLayout = (props: PropsWithChildren) => {
               {globalStatus && globalStats ? (
                 <>
                   <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
-                  <QuestionCountDown expTimestamp={globalStatus.questionExpiration} />
+                  <QuestionCountDown expTimestamp={globalStatus.questionExp} />
                 </>
               )
                 : 'Loading...'}
@@ -189,6 +192,6 @@ export const PageLayout = (props: PropsWithChildren) => {
           </div>
         </footer>
       </div>
-    </>
+    </GlobalStatusContext.Provider>
   )
 }

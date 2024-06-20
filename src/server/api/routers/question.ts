@@ -1,13 +1,13 @@
 import { type PrismaClient } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure } from "~/server/api/trpc";
-import { filterQuestionForClient } from "~/server/helpers/filter";
+import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
+import { filterQuestionForClientPrivate, filterQuestionForClientPublic } from "~/server/helpers/filter";
 
 export const getQuestionById = async (db: PrismaClient, qid: number) => {
   const question = await db.question.findFirst({
     where: {
-      id: qid
+      questionNum: qid
     }
   })
 
@@ -17,20 +17,29 @@ export const getQuestionById = async (db: PrismaClient, qid: number) => {
 }
 
 export const questionRouter = createTRPCRouter({
-  get: privateProcedure
+  getPublic: publicProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
-      const currentQuestion = await getCurrentQuestion(ctx.db)
-      if (input.id > currentQuestion.id)
-        throw new TRPCError({ code: "NOT_FOUND" })
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      if (input.id > latestQuestion.questionNum)
+        throw new TRPCError({ code: "BAD_REQUEST" })
       const question = await getQuestionById(ctx.db, input.id)
-      return filterQuestionForClient(question)
+      return filterQuestionForClientPublic(question)
+    }),
+  getPrivate: privateProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      if (input.id > latestQuestion.questionNum)
+        throw new TRPCError({ code: "BAD_REQUEST" })
+      const question = await getQuestionById(ctx.db, input.id)
+      return filterQuestionForClientPrivate(question)
     }),
   start: privateProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const currentQuestion = await getCurrentQuestion(ctx.db)
-      if (input.questionId > currentQuestion.id)
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      if (input.questionId > latestQuestion.questionNum)
         throw new TRPCError({ code: "NOT_FOUND" })
 
       if (await isQuestionAlreadyStartedByUser(ctx.db, ctx.userId, input.questionId))
@@ -112,7 +121,7 @@ const isQuestionAlreadyStartedByUser = async (db: PrismaClient, userId: string, 
 // Otherwise, this function should only be used to validate that future questions are not being accessed/referenced
 // All other procs that need a question id must get the id from the client
 // This allows the user to start/submit previous questions at any time
-export const getCurrentQuestion = async (db: PrismaClient) => {
+export const getLatestQuestion = async (db: PrismaClient) => {
   const question = await db.question.findFirst({
     where: {
       startsAt: {
