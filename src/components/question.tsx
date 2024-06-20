@@ -5,7 +5,7 @@ import { api } from "~/utils/api"
 import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./constants"
 import { SubmissionDisplay } from "./submission"
 import toast from "react-hot-toast"
-import { SignedIn, SignedOut } from "@clerk/nextjs"
+import { useAuth } from "@clerk/nextjs"
 import { GreenSignInButton } from "./layout"
 import { LoadingSpinner } from "./loading"
 import { type PublicQuestionInfo } from "~/server/helpers/filter"
@@ -23,6 +23,7 @@ const Question = ({ questionId }: { questionId: number }) => {
       }
       toast.success('Your submission was recorded!')
       void utils.status.question.invalidate()
+      void utils.question.getInfinite.invalidate()
       void utils.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
@@ -93,6 +94,7 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
 }
 
 export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
+  const { isSignedIn } = useAuth()
   const {
     data: questionStatus,
     isLoading: isQuestionStatusLoading,
@@ -107,6 +109,16 @@ export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
       toast.error(`An error occured: ${error.message}`)
     }
   })
+
+  if (!isSignedIn) {
+    return (
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>Sign in to get started!</p>
+        <GreenSignInButton />
+      </div>
+    )
+  }
 
   if (isQuestionStatusError) return <p>Error</p>
 
@@ -136,25 +148,17 @@ export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
 
   return (
     <>
-      <SignedIn>
-        <div className="px-2 py-2 space-y-4">
-          <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
-          <p>Click the button to start this question:</p>
-          <button
-            disabled={isQuestionLoading}
-            onClick={(_e) => startQuestion({ questionId: questionStatus.questionId })}
-            className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
-          >
-            Start!
-          </button>
-        </div>
-      </SignedIn>
-      <SignedOut>
-        <div className="px-2 py-2 space-y-4">
-          <p>Sign in to get started!</p>
-          <GreenSignInButton />
-        </div>
-      </SignedOut>
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>Click the button to start this question:</p>
+        <button
+          disabled={isQuestionLoading}
+          onClick={(_e) => startQuestion({ questionId: questionStatus.questionId })}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
+        >
+          Start!
+        </button>
+      </div>
     </>
   )
 }

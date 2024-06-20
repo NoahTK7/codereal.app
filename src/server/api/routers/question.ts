@@ -76,7 +76,7 @@ export const questionRouter = createTRPCRouter({
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" })
       }
     }),
-  getInfinite: privateProcedure
+  getInfinite: publicProcedure
     .input(
       z.object({
         limit: z.number().min(1).max(20).nullish(),
@@ -95,7 +95,7 @@ export const questionRouter = createTRPCRouter({
           startsAt: true,
           submissions: {
             where: {
-              authorId: ctx.userId
+              authorId: ctx.userId ?? "" // ~should~ be no submissions with empty author
             },
             select: {
               runResult: true

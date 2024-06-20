@@ -1,4 +1,4 @@
-import { SignInButton, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Head from "next/head";
 import Link from "next/link";
 import { createContext, type PropsWithChildren } from "react";
@@ -97,7 +97,6 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
 export const GlobalStatusContext = createContext<PublicQuestionInfo | undefined>(undefined)
 
 export const PageLayout = (props: PropsWithChildren) => {
-  const { isSignedIn } = useAuth()
   const { data: globalStatus } = api.status.global.useQuery(undefined, {
     ...noRefreshOpts,
     ...skipBatchOpts
@@ -139,11 +138,9 @@ export const PageLayout = (props: PropsWithChildren) => {
                 <div className="flex flex-shrink-0 items-center">
                   <Link href="/" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-xl font-mono font-bold" >CodeReal</Link>
                 </div>
-                {isSignedIn &&
-                  <div className="flex space-x-4 items-center">
-                    <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
-                  </div>
-                }
+                <div className="flex space-x-4 items-center">
+                  <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
+                </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
                 <div className="relative ml-3">
