@@ -23,7 +23,9 @@ const Question = ({ questionId }: { questionId: number }) => {
       }
       toast.success('Your submission was recorded!')
       void utils.status.question.invalidate()
-      void utils.question.getInfinite.invalidate()
+      void utils.question.getInfinite.invalidate(undefined, {
+        type: 'all' // refresh queries on other pages
+      })
       void utils.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
