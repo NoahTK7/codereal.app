@@ -16,7 +16,7 @@ const Question = ({ questionId }: { questionId: number }) => {
   const { mutate: submitQuestion, isLoading: isSubmitLoading } = api.submission.submit.useMutation({
     onSuccess: (data) => {
       if (data.error) {
-        toast.error(`Execution error: ${data.execResult.errorMessage ?? 'unknown'}`, {
+        toast.error(data.errorMessage ?? 'unknown error', {
           duration: 5000
         })
         return

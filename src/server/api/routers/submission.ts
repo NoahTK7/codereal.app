@@ -36,10 +36,15 @@ export const submissionRouter = createTRPCRouter({
       const question = await getQuestionById(ctx.db, input.questionId)
 
       const execResult = await executeCode(question, input.code)
-      if (execResult.errorMessage) return {
+      if (execResult.errorMessage !== null) return {
         error: true,
         submissionId: -1,
-        execResult
+        errorMessage: "Execution error: " + execResult.errorMessage
+      }
+      else if (execResult.accuracy < 1) return {
+        error: true,
+        submissionId: -1,
+        errorMessage: "Incorrect solution"
       }
 
       const solveTime = await getSolveTime(ctx.db, ctx.userId, input.questionId)
