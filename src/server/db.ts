@@ -13,9 +13,21 @@ const prismaClientSingleton = () => {
     ]
   });
 
+  const queryBlockList = ["BEGIN", "COMMIT", "SELECT 1"]
+
   client.$on('query', e => {
-    if (env.NODE_ENV !== 'development') {
-      axiom.info("query", { ...e })
+    if (env.NODE_ENV === "production") {
+      if (!queryBlockList.some(blockedQuery => e.query.includes(blockedQuery))) {
+        axiom.info("query", { ...e });
+      }
+    } else {
+      console.log(e)
+    }
+  })
+
+  client.$on('error', e => {
+    if (env.NODE_ENV === "production") {
+      axiom.error("prisma error", { ...e })
     } else {
       console.log(e)
     }
@@ -31,10 +43,6 @@ const prismaClientSingleton = () => {
     if (env.NODE_ENV !== 'production') {
       console.log(e)
     }
-  })
-
-  client.$on('error', e => {
-    console.log(e)
   })
 
   return client

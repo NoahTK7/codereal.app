@@ -95,6 +95,21 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
 
 export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
   const { isSignedIn } = useAuth()
+
+  if (!isSignedIn) {
+    return (
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>Sign in to get started!</p>
+        <GreenSignInButton />
+      </div>
+    )
+  }
+
+  return <QuestionSignedIn {...questionInfo} />
+}
+
+const QuestionSignedIn = (questionInfo: PublicQuestionInfo) => {
   const {
     data: questionStatus,
     isLoading: isQuestionStatusLoading,
@@ -109,16 +124,6 @@ export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
       toast.error(`An error occured: ${error.message}`)
     }
   })
-
-  if (!isSignedIn) {
-    return (
-      <div className="px-2 py-2 space-y-4">
-        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
-        <p>Sign in to get started!</p>
-        <GreenSignInButton />
-      </div>
-    )
-  }
 
   if (isQuestionStatusError) return <p>Error</p>
 
