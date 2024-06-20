@@ -1,9 +1,6 @@
-import { api } from "~/utils/api";
-import { SignedIn, SignedOut } from "@clerk/nextjs";
-import { LoadingSpinner } from "~/components/loading";
+import { useContext } from "react";
+import { GlobalStatusContext } from "~/components/layout";
 import { QuestionHandler } from "~/components/question";
-import { noRefreshOpts } from "~/components/constants";
-import { GreenSignInButton } from "~/components/layout";
 
 const Description = () => {
   return (
@@ -22,36 +19,18 @@ const Description = () => {
   )
 }
 
-const SignedInHome = () => {
-  const {
-    data: personalStatusData,
-    isLoading: isPersonalStatusLoading,
-    isError: isPersonalStatusError
-  } = api.status.personal.useQuery(undefined, noRefreshOpts)
-
-  if (isPersonalStatusError) return <p>Could not connect to backend service. Please refresh the page.</p>
-
-  if (isPersonalStatusLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
-
-  // improvement: use suspense boundary (?)
-  return <QuestionHandler {...personalStatusData} />
-}
 
 export default function HomePage() {
+  const globalStatus = useContext(GlobalStatusContext)
+
+  if (!globalStatus) return (<p>Could not connect to backend service. Please refresh the page.</p>)
 
   return (
     <div className="space-y-4">
       <Description />
       <hr />
-      <SignedIn>
-        <SignedInHome />
-      </SignedIn>
-      <SignedOut>
-        <div className="px-2 py-2 space-y-4">
-          <p>Sign in to get started!</p>
-          <GreenSignInButton />
-        </div>
-      </SignedOut>
+      <p className="text-xl font-mono font-bold px-2">Today&apos;s Question</p>
+      <QuestionHandler {...globalStatus} />
     </div>
-  );
+  )
 }

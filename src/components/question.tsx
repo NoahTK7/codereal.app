@@ -4,13 +4,16 @@ import { useStopwatch } from "react-timer-hook"
 import { api } from "~/utils/api"
 import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./constants"
 import { SubmissionDisplay } from "./submission"
-import { type PersonalStatusData } from "~/server/api/routers/status"
 import toast from "react-hot-toast"
+import { useAuth } from "@clerk/nextjs"
+import { GreenSignInButton } from "./layout"
+import { LoadingSpinner } from "./loading"
+import { type PublicQuestionInfo } from "~/server/helpers/filter"
 
 const Question = ({ questionId }: { questionId: number }) => {
   const [isSubmitTimeout, setIsSubmitTimeout] = useState(false)
-  const { data, isLoading, isError } = api.question.get.useQuery({ id: questionId }, noRefreshOpts)
-  const { mutate: submitQuestion } = api.submission.submit.useMutation({
+  const { data, isLoading, isError } = api.question.getPrivate.useQuery({ id: questionId }, noRefreshOpts)
+  const { mutate: submitQuestion, isLoading: isSubmitLoading } = api.submission.submit.useMutation({
     onSuccess: (data) => {
       if (data.error) {
         toast.error(`Execution error: ${data.execResult.errorMessage ?? 'unknown'}`, {
@@ -19,7 +22,8 @@ const Question = ({ questionId }: { questionId: number }) => {
         return
       }
       toast.success('Your submission was recorded!')
-      void utils.status.personal.invalidate()
+      void utils.status.question.invalidate()
+      void utils.question.getInfinite.invalidate()
       void utils.submission.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
@@ -39,18 +43,17 @@ const Question = ({ questionId }: { questionId: number }) => {
 
   if (isError) return <p>Question could not be loaded. Please refresh the page.</p>
 
-  const initialValue = data.funcSignature + ' {\n  \n}'
+  const initialValue = data.signature + ' {\n  \n}'
   if (code == "") setCode(initialValue)
 
   return (
     <div>
-      <p className="text-xl mb-4">Question #{data.id}: {data.title}</p>
-      <p>{data.questionDescription}</p>
+      <p>{data.description}</p>
       <ReactCodeMirror
         value={code}
         extensions={codeEditorExtensions}
         autoFocus={true}
-        readOnly={isSubmitTimeout}
+        readOnly={isSubmitLoading}
         theme={codeEditorTheme}
         maxHeight="8rem"
         onChange={(value, _update) => {
@@ -90,48 +93,77 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
   )
 }
 
-export const QuestionHandler = (props: PersonalStatusData) => {
+export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
+  const { isSignedIn } = useAuth()
+
+  if (!isSignedIn) {
+    return (
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>Sign in to get started!</p>
+        <GreenSignInButton />
+      </div>
+    )
+  }
+
+  return <QuestionSignedIn {...questionInfo} />
+}
+
+const QuestionSignedIn = (questionInfo: PublicQuestionInfo) => {
+  const {
+    data: questionStatus,
+    isLoading: isQuestionStatusLoading,
+    isError: isQuestionStatusError
+  } = api.status.question.useQuery({ id: questionInfo.questionId }, noRefreshOpts)
   const utils = api.useUtils()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
     onSuccess: () => {
-      void utils.status.personal.invalidate()
+      void utils.status.question.invalidate()
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)
     }
   })
 
-  if (props.isCompleted) {
+  if (isQuestionStatusError) return <p>Error</p>
+
+  if (isQuestionStatusLoading) return <div className="flex justify-center"><LoadingSpinner size={48} /></div>
+
+  if (questionStatus.isCompleted) {
     return (
-      <>
-        <p>You&apos;ve already completed today&apos;s question!</p>
-        {props.submissionId
-          ? <SubmissionDisplay id={props.submissionId} />
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>You&apos;ve already completed this question!</p>
+        {questionStatus.submissionId
+          ? <SubmissionDisplay id={questionStatus.submissionId} />
           : <p>There was an error retrieving your submission.</p>}
-      </>
+      </div>
     )
   }
 
-  if (props.isStarted) {
+  if (questionStatus.isStarted) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-xl font-mono font-bold">Today&apos;s Question</p>
-        <Question questionId={props.questionId} />
-        {props.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={props.startTime} /></p>}
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <Question questionId={questionStatus.questionId} />
+        {questionStatus.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={questionStatus.startTime} /></p>}
       </div>
     )
   }
 
   return (
-    <div className="space-y-4">
-      <p>Click button to start today&apos;s question (#{props.questionId})!</p>
-      <button
-        disabled={isQuestionLoading}
-        onClick={(_e) => startQuestion({ questionId: props.questionId })}
-        className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
-      >
-        Start!
-      </button>
-    </div>
+    <>
+      <div className="px-2 py-2 space-y-4">
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
+        <p>Click the button to start this question:</p>
+        <button
+          disabled={isQuestionLoading}
+          onClick={(_e) => startQuestion({ questionId: questionStatus.questionId })}
+          className="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline-green active:bg-green-800 ease-out duration-300"
+        >
+          Start!
+        </button>
+      </div>
+    </>
   )
 }

@@ -14,7 +14,7 @@ datasource db {
 model Question {
     id Int @id @default(autoincrement())
 
-    questionNum   Int             @unique
+    num           Int             @unique
     title         String          @default("") @db.VarChar(128)
     startsAt      DateTime
     endsAt        DateTime
@@ -26,7 +26,7 @@ model Question {
     startEvents   StartEvent[]
     questionStats QuestionStats[]
 
-    @@index([id])
+    @@index([num])
     @@index([startsAt, endsAt])
 }
 
@@ -93,4 +93,10 @@ model UserStats {
     // improvement: current streak (consecutive submissions)
 
     @@index([userId])
+}
+
+model RateLimiter {
+    key    String    @id
+    points Int
+    expire DateTime?
 }

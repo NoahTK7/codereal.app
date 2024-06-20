@@ -1,7 +1,10 @@
 import { createTRPCRouter, privateProcedure, publicProcedure } from "~/server/api/trpc";
-import { getCurrentQuestion } from "./question";
+import { getLatestQuestion, getQuestionById } from "./question";
+import { z } from "zod";
+import { TRPCError } from "@trpc/server";
+import { filterQuestionForClientPublic } from "~/server/helpers/filter";
 
-export type PersonalStatusData = {
+export type QuestionStatusData = {
   isStarted: boolean,
   isCompleted: boolean,
   questionId: number,
@@ -12,19 +15,21 @@ export type PersonalStatusData = {
 export const statusRouter = createTRPCRouter({
   global: publicProcedure
     .query(async ({ ctx }) => {
-      const currentQuestion = await getCurrentQuestion(ctx.db)
-      return {
-        questionExpiration: currentQuestion.endsAt
-      }
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      return filterQuestionForClientPublic(latestQuestion)
     }),
-  personal: privateProcedure
-    .query(async ({ ctx }): Promise<PersonalStatusData> => {
-      const currentQuestion = await getCurrentQuestion(ctx.db)
+  question: privateProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }): Promise<QuestionStatusData> => {
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      const question = await getQuestionById(ctx.db, input.id)
+      if (question.num > latestQuestion.num)
+        throw new TRPCError({ code: "BAD_REQUEST" })
 
       const startEvent = await ctx.db.startEvent.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: currentQuestion.id
+          questionId: question.id
         }
       })
 
@@ -32,16 +37,16 @@ export const statusRouter = createTRPCRouter({
         return {
           isStarted: false,
           isCompleted: false,
-          questionId: currentQuestion.id,
+          questionId: question.id,
           submissionId: null,
           startTime: null
-        } satisfies PersonalStatusData
+        } satisfies QuestionStatusData
       }
 
       const submission = await ctx.db.submission.findFirst({
         where: {
           authorId: ctx.userId,
-          questionId: currentQuestion.id
+          questionId: question.id
         },
         select: {
           id: true
@@ -53,7 +58,7 @@ export const statusRouter = createTRPCRouter({
         startTime: startEvent.createdAt,
         isCompleted: submission != null,
         submissionId: submission?.id ?? null,
-        questionId: currentQuestion.id
-      } satisfies PersonalStatusData
+        questionId: question.id
+      } satisfies QuestionStatusData
     })
 });

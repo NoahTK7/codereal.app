@@ -1,36 +1,18 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { api, type RouterOutputs } from "~/utils/api";
-import { codeEditorExtensions, codeEditorTheme, noRefreshOpts } from "./constants";
-import { useCollapse } from "react-collapsed";
-import { ChevronDownIcon, ChevronRightIcon } from "@radix-ui/react-icons";
+import { codeEditorExtensions, codeEditorTheme, noRefreshOpts, statusColors } from "./constants";
 import { LoadingSpinner } from "./loading";
 
 type SubmissionItem = RouterOutputs['submission']['getInfinite']['submissions'][number]
-export const Submission = ({ data, solo: isSolo }: { data: SubmissionItem, solo: boolean }) => {
-  // eslint-disable-next-line @typescript-eslint/unbound-method
-  const { getCollapseProps, getToggleProps, isExpanded } = useCollapse({
-    defaultExpanded: isSolo
-  })
-
-  const statusColors = {
-    ERROR: "text-rose-700",
-    TIMEOUT: "text-rose-700",
-    INCORRECT: "text-yellow-500",
-    CORRECT: "text-emerald-600",
-    UNKNOWN: "text-slate-500"
-  };
+export const Submission = ({ data }: { data: SubmissionItem }) => {
   const statusColor = statusColors[data.runResult] || "";
 
   return (
-    <div className="space-y-4 py-4 px-2">
-      <div {...getToggleProps({ disabled: isSolo })} className="flex justify-between">
-        <p className="space-x-2 inline-block"><span className="text-xl">Question #{data.questionId} Submission</span> <span className={`font-bold text-md ${statusColor}`}>({data.runResult})</span></p>
-        {!isSolo &&
-          <div className="flex-right">
-            {isExpanded ? <ChevronDownIcon height={24} width={24} /> : <ChevronRightIcon height={24} width={24} />}
-          </div>}
+    <>
+      <div className="flex justify-between">
+        <p className="space-x-2 inline-block"><span className="text-lg">Result: </span> <span className={`font-bold text-lg ${statusColor}`}>{data.runResult}</span></p>
       </div>
-      <section {...getCollapseProps()} className="space-y-4 !mb-4">
+      <section className="space-y-4 !mb-4">
         {data.errorMessage &&
           <div className="rounded-md border border-stroke py-2 px-4 shadow-1 bg-rose-100 border-red-400">
             <p>Error: &quot;{data.errorMessage}&quot;</p>
@@ -73,7 +55,7 @@ export const Submission = ({ data, solo: isSolo }: { data: SubmissionItem, solo:
         />
         {/* improvement: add share score button */}
       </section>
-    </div>
+    </>
   )
 }
 
@@ -84,7 +66,7 @@ export const SubmissionDisplay = ({ id }: { id: number }) => {
 
   if (isError) return <p>There was an error retrieving your submission.</p>
 
-  return <Submission data={data} solo={true} />
+  return <Submission data={data} />
 }
 
 const convertSeconds = (seconds: number) => {

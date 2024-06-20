@@ -5,6 +5,7 @@ import { type CodeExecutionResult, executeCode } from "~/server/executeCode";
 import { getQuestionById } from "./question";
 import { type Question, type PrismaClient, SubmissionResult } from "@prisma/client";
 import { updateQuestionStats, updateUserStats } from "./statistics";
+import { rateLimit } from "~/server/rateLimiter";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
@@ -25,6 +26,10 @@ export const submissionRouter = createTRPCRouter({
       questionId: z.number()
     }))
     .mutation(async ({ ctx, input }) => {
+      const rateLimitResp = await rateLimit(ctx.userId)
+      if (rateLimitResp.remainingPoints === 0)
+        throw new TRPCError({ code: "TOO_MANY_REQUESTS", message: `Too many requests. Retry in ${Math.round(rateLimitResp.msBeforeNext / 1000)} seconds.` })
+
       if (await isQuestionAlreadySubmittedByUser(ctx.db, ctx.userId, input.questionId))
         throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "You already submitted this question!" })
 

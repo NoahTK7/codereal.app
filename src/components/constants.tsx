@@ -22,3 +22,11 @@ export const skipBatchOpts = {
     }
   }
 }
+
+export const statusColors = {
+  ERROR: "text-rose-700",
+  TIMEOUT: "text-rose-700",
+  INCORRECT: "text-yellow-500",
+  CORRECT: "text-emerald-600",
+  UNKNOWN: "text-slate-500"
+};

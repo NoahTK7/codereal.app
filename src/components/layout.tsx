@@ -1,15 +1,15 @@
-import { SignInButton, SignedIn, SignedOut, UserButton, useAuth } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Head from "next/head";
 import Link from "next/link";
-import { type PropsWithChildren } from "react";
+import { createContext, type PropsWithChildren } from "react";
 import { api, getBaseUrl } from "~/utils/api";
-import { LinkedInLogoIcon } from '@radix-ui/react-icons';
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { noRefreshOpts, skipBatchOpts } from "./constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
 import { MetaHeadEmbed } from "@phntms/react-share";
+import { type PublicQuestionInfo } from "~/server/helpers/filter";
 
 const Account = () => {
   return (
@@ -45,7 +45,7 @@ export const GreenSignInButton = () => {
 }
 
 const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
-  const ctx = api.useContext()
+  const ctx = api.useUtils()
   const router = useRouter()
 
   const displayNewQuestionAvailable = () => {
@@ -94,8 +94,9 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
   return <span>Next question in {`${remainingTime.hours}h ${remainingTime.minutes}m ${remainingTime.seconds}s`}.</span>
 }
 
+export const GlobalStatusContext = createContext<PublicQuestionInfo | undefined>(undefined)
+
 export const PageLayout = (props: PropsWithChildren) => {
-  const { isSignedIn } = useAuth()
   const { data: globalStatus } = api.status.global.useQuery(undefined, {
     ...noRefreshOpts,
     ...skipBatchOpts
@@ -106,7 +107,7 @@ export const PageLayout = (props: PropsWithChildren) => {
   })
 
   return (
-    <>
+    <GlobalStatusContext.Provider value={globalStatus}>
       <Head>
         <MetaHeadEmbed
           render={(meta: React.ReactNode) => <>{meta}</>}
@@ -137,16 +138,12 @@ export const PageLayout = (props: PropsWithChildren) => {
                 <div className="flex flex-shrink-0 items-center">
                   <Link href="/" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-xl font-mono font-bold" >CodeReal</Link>
                 </div>
-                {isSignedIn &&
-                  <div className="flex space-x-4 items-center">
-                    <Link href="/past-submissions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Submissions</Link>
-                  </div>
-                }
+                <div className="flex space-x-4 items-center">
+                  <Link href="/past-questions" className="text-gray-700 hover:bg-slate-300 hover:text-gray-800 rounded-md px-3 py-2 text-sm font-small">Past Questions</Link>
+                </div>
               </div>
               <div className="absolute inset-y-0 right-0 flex items-center pr-2 sm:static sm:inset-auto sm:ml-6 sm:pr-0">
-                <div className="relative ml-3">
-                  <Account />
-                </div>
+                <Account />
               </div>
             </div>
           </div>
@@ -167,35 +164,29 @@ export const PageLayout = (props: PropsWithChildren) => {
         </main>
 
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
-          <div className="flex justify-center ">
-            <div className="max-w-7xl px-4 py-2 font-mono">
+          <div className="px-4 py-2 font-mono flex justify-center">
+            <div className="text-center">
               {globalStatus && globalStats ? (
                 <>
                   <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
-                  <QuestionCountDown expTimestamp={globalStatus.questionExpiration} />
+                  <QuestionCountDown expTimestamp={globalStatus.questionExp} />
                 </>
               )
                 : 'Loading...'}
             </div>
           </div>
-          <div className="flex justify-between">
-            <div className="max-w-7xl px-4 py-2 justify-left">
-              <p className="align-middle">Copyright © {new Date().getFullYear()} Noah Kurrack. All rights reserved.</p>
-            </div>
-            <div className="max-w-7xl px-4 py-2 justify-right items-center">
-              <div className="hover:bg-white duration-200 px-1 py-1 rounded-sm">
-                <a
-                  href="https://www.linkedin.com/in/noahkurrack/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <LinkedInLogoIcon height={20} width={20} />
-                </a>
-              </div>
+          <div className="px-4 py-2 flex justify-center">
+            <div>
+              <p className="align-middle">Copyright © {new Date().getFullYear()} <a
+                href="https://www.linkedin.com/in/noahkurrack/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="underline"
+              >Noah Kurrack</a>. All rights reserved.</p>
             </div>
           </div>
         </footer>
       </div>
-    </>
+    </GlobalStatusContext.Provider>
   )
 }

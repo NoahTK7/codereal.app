@@ -10,11 +10,25 @@ export const filterUserForClient = (user: User) => {
   };
 };
 
-export const filterQuestionForClient = (question: Question) => {
+export type PublicQuestionInfo = {
+  questionId: number
+  questionNum: number
+  questionTitle: string
+  questionExp: Date
+}
+
+export const filterQuestionForClientPublic = (question: Question) => {
   return {
-    id: question.id,
-    title: question.title,
-    questionDescription: question.description,
-    funcSignature: question.funcSig,
+    questionId: question.id,
+    questionNum: question.num,
+    questionTitle: question.title,
+    questionExp: question.endsAt
+  } as PublicQuestionInfo
+}
+
+export const filterQuestionForClientPrivate = (question: Question) => {
+  return {
+    description: question.description,
+    signature: question.funcSig,
   }
 }
