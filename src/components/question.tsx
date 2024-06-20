@@ -2,12 +2,12 @@ import ReactCodeMirror from "@uiw/react-codemirror"
 import { useState } from "react"
 import { useStopwatch } from "react-timer-hook"
 import { api } from "~/utils/api"
-import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./constants"
+import { noRefreshOpts, codeEditorExtensions, codeEditorTheme } from "./utils/constants"
 import { SubmissionDisplay } from "./submission"
 import toast from "react-hot-toast"
 import { useAuth } from "@clerk/nextjs"
 import { GreenSignInButton } from "./layout"
-import { LoadingSpinner } from "./loading"
+import { LoadingSpinner } from "./utils/loading"
 import { type PublicQuestionInfo } from "~/server/helpers/filter"
 
 const Question = ({ questionId }: { questionId: number }) => {
@@ -22,7 +22,7 @@ const Question = ({ questionId }: { questionId: number }) => {
         return
       }
       toast.success('Your submission was recorded!')
-      void utils.status.question.invalidate()
+      void utils.question.status.invalidate()
       void utils.question.getInfinite.invalidate(undefined, {
         type: 'all' // refresh queries on other pages
       })
@@ -116,11 +116,11 @@ const QuestionSignedIn = (questionInfo: PublicQuestionInfo) => {
     data: questionStatus,
     isLoading: isQuestionStatusLoading,
     isError: isQuestionStatusError
-  } = api.status.question.useQuery({ id: questionInfo.questionId }, noRefreshOpts)
+  } = api.question.status.useQuery({ id: questionInfo.questionId }, noRefreshOpts)
   const utils = api.useUtils()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
     onSuccess: () => {
-      void utils.status.question.invalidate()
+      void utils.question.status.invalidate()
     },
     onError: (error) => {
       toast.error(`An error occured: ${error.message}`)

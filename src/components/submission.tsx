@@ -1,7 +1,7 @@
 import ReactCodeMirror from "@uiw/react-codemirror";
 import { api, type RouterOutputs } from "~/utils/api";
-import { codeEditorExtensions, codeEditorTheme, noRefreshOpts, statusColors } from "./constants";
-import { LoadingSpinner } from "./loading";
+import { codeEditorExtensions, codeEditorTheme, noRefreshOpts, statusColors } from "./utils/constants";
+import { LoadingSpinner } from "./utils/loading";
 
 type SubmissionItem = RouterOutputs['submission']['getInfinite']['submissions'][number]
 export const Submission = ({ data }: { data: SubmissionItem }) => {

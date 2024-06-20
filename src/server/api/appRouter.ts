@@ -1,13 +1,13 @@
 import { createTRPCRouter } from "~/server/api/trpc";
-import { statusRouter } from "./routers/status";
 import { userRouter } from "./routers/user";
 import { statisticsRouter } from "./routers/statistics";
 import { questionRouter } from "./routers/question";
 import { submissionRouter } from "./routers/submission";
+import { globalStateRouter } from "./routers/state";
 
 // primary API router
 export const appRouter = createTRPCRouter({
-  status: statusRouter,
+  globalState: globalStateRouter,
   statistics: statisticsRouter,
   question: questionRouter,
   user: userRouter,

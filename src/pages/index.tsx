@@ -1,6 +1,8 @@
 import { useContext } from "react";
-import { GlobalStatusContext } from "~/components/layout";
+import { GlobalStateContext } from "~/components/layout";
+
 import { QuestionHandler } from "~/components/question";
+
 
 const Description = () => {
   return (
@@ -19,18 +21,15 @@ const Description = () => {
   )
 }
 
-
 export default function HomePage() {
-  const globalStatus = useContext(GlobalStatusContext)
-
-  if (!globalStatus) return (<p>Could not connect to backend service. Please refresh the page.</p>)
+  const globalState = useContext(GlobalStateContext)
 
   return (
     <div className="space-y-4">
       <Description />
       <hr />
       <p className="text-xl font-mono font-bold px-2">Today&apos;s Question</p>
-      <QuestionHandler {...globalStatus} />
+      <QuestionHandler {...globalState.todaysQuestion} />
     </div>
   )
 }

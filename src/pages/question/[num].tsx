@@ -1,5 +1,5 @@
 import { useRouter } from "next/router";
-import { LoadingSpinner } from "~/components/loading";
+import { LoadingSpinner } from "~/components/utils/loading";
 import { QuestionHandler } from "~/components/question";
 import { api } from "~/utils/api";
 

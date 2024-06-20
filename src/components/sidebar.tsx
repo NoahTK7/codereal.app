@@ -1,6 +1,6 @@
 import { api } from "~/utils/api"
-import { noRefreshOpts } from "./constants"
-import { LoadingSpinner } from "./loading"
+import { noRefreshOpts } from "./utils/constants"
+import { LoadingSpinner } from "./utils/loading"
 import { SignInButton, useAuth } from "@clerk/nextjs"
 import dayjs from "dayjs"
 import relativeTime from "dayjs/plugin/relativeTime";
