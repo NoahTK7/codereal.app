@@ -8,7 +8,7 @@ import toast from "react-hot-toast"
 import { SignedIn, SignedOut } from "@clerk/nextjs"
 import { GreenSignInButton } from "./layout"
 import { LoadingSpinner } from "./loading"
-import { type PublicQuestion } from "~/server/helpers/filter"
+import { type PublicQuestionInfo } from "~/server/helpers/filter"
 
 const Question = ({ questionId }: { questionId: number }) => {
   const [isSubmitTimeout, setIsSubmitTimeout] = useState(false)
@@ -92,12 +92,12 @@ const ElapsedTimeCounter = ({ startTime }: { startTime: Date }) => {
   )
 }
 
-export const QuestionHandler = (publicQuestion: PublicQuestion) => {
+export const QuestionHandler = (questionInfo: PublicQuestionInfo) => {
   const {
     data: questionStatus,
     isLoading: isQuestionStatusLoading,
     isError: isQuestionStatusError
-  } = api.status.question.useQuery({ id: publicQuestion.questionId }, noRefreshOpts)
+  } = api.status.question.useQuery({ id: questionInfo.questionId }, noRefreshOpts)
   const utils = api.useUtils()
   const { mutate: startQuestion, isLoading: isQuestionLoading } = api.question.start.useMutation({
     onSuccess: () => {
@@ -115,7 +115,7 @@ export const QuestionHandler = (publicQuestion: PublicQuestion) => {
   if (questionStatus.isCompleted) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-xl mb-4">Question #{publicQuestion.questionId}: {publicQuestion.questionTitle}</p>
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
         <p>You&apos;ve already completed this question!</p>
         {questionStatus.submissionId
           ? <SubmissionDisplay id={questionStatus.submissionId} />
@@ -127,7 +127,7 @@ export const QuestionHandler = (publicQuestion: PublicQuestion) => {
   if (questionStatus.isStarted) {
     return (
       <div className="px-2 py-2 space-y-4">
-        <p className="text-xl mb-4">Question #{publicQuestion.questionId}: {publicQuestion.questionTitle}</p>
+        <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
         <Question questionId={questionStatus.questionId} />
         {questionStatus.startTime && <p>Elapsed time: <ElapsedTimeCounter startTime={questionStatus.startTime} /></p>}
       </div>
@@ -138,7 +138,7 @@ export const QuestionHandler = (publicQuestion: PublicQuestion) => {
     <>
       <SignedIn>
         <div className="px-2 py-2 space-y-4">
-          <p className="text-xl mb-4">Question #{publicQuestion.questionId}: {publicQuestion.questionTitle}</p>
+          <p className="text-xl mb-4">Question #{questionInfo.questionNum}: {questionInfo.questionTitle}</p>
           <p>Click the button to start this question:</p>
           <button
             disabled={isQuestionLoading}

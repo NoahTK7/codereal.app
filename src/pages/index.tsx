@@ -29,7 +29,7 @@ export default function HomePage() {
     <div className="space-y-4">
       <Description />
       <hr />
-      <p className="text-xl font-mono font-bold">Today&apos;s Question</p>
+      <p className="text-xl font-mono font-bold px-2">Today&apos;s Question</p>
       <QuestionHandler {...globalStatus} />
     </div>
   )

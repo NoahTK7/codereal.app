@@ -34,11 +34,11 @@ const QuestionList = () => {
             const submission = question.submissions[0]
             const statusColor = submission ? statusColors[submission.runResult] : statusColors.UNKNOWN
             return (
-              <Link key={i} href={`/question/${question.questionNum}`}>
+              <Link key={i} href={`/question/${question.num}`}>
                 <div className="space-y-4 my-6 py-4 px-4 bg-slate-100	rounded">
                   <div className="flex justify-between gap-x-1">
                     <p className="space-x-2 inline-block">
-                      <span className="text-xl block sm:inline-block">Question #{question.questionNum}: {question.title}</span>
+                      <span className="text-xl block sm:inline-block">Question #{question.num}: {question.title}</span>
                       <span className="text-sm block sm:inline-block">{dayjs(question.startsAt).format('ddd MMM DD YYYY')}</span>
                     </p>
                     <div className="flex-right flex">

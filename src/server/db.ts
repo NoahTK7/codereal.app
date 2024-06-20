@@ -4,7 +4,7 @@ import { log as axiom } from "next-axiom";
 import { env } from "~/env.mjs";
 
 const prismaClientSingleton = () => {
-  return new PrismaClient({
+  const client = new PrismaClient({
     log: [
       { level: 'query', emit: 'event' },
       { level: 'info', emit: 'event' },
@@ -12,6 +12,32 @@ const prismaClientSingleton = () => {
       { level: 'error', emit: 'event' }
     ]
   });
+
+  client.$on('query', e => {
+    if (env.NODE_ENV !== 'development') {
+      axiom.info("query", { ...e })
+    } else {
+      console.log(e)
+    }
+  })
+
+  client.$on('info', e => {
+    if (env.NODE_ENV !== 'production') {
+      console.log(e)
+    }
+  })
+
+  client.$on('warn', e => {
+    if (env.NODE_ENV !== 'production') {
+      console.log(e)
+    }
+  })
+
+  client.$on('error', e => {
+    console.log(e)
+  })
+
+  return client
 }
 
 declare const globalThis: {
@@ -21,27 +47,3 @@ declare const globalThis: {
 export const db = globalThis.prismaGlobal ?? prismaClientSingleton()
 
 if (env.NODE_ENV === 'development') globalThis.prismaGlobal = db
-
-db.$on('query', e => {
-  if (env.NODE_ENV !== 'development') {
-    axiom.info("query", { ...e })
-  } else {
-    console.log(e)
-  }
-})
-
-db.$on('info', e => {
-  if (env.NODE_ENV !== 'production') {
-    console.log(e)
-  }
-})
-
-db.$on('warn', e => {
-  if (env.NODE_ENV !== 'production') {
-    console.log(e)
-  }
-})
-
-db.$on('error', e => {
-  console.log(e)
-})

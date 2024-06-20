@@ -7,7 +7,19 @@ import { filterQuestionForClientPrivate, filterQuestionForClientPublic } from "~
 export const getQuestionById = async (db: PrismaClient, qid: number) => {
   const question = await db.question.findFirst({
     where: {
-      questionNum: qid
+      id: qid
+    }
+  })
+
+  if (question === null) throw new TRPCError({ code: "NOT_FOUND" })
+
+  return question
+}
+
+export const getQuestionByNum = async (db: PrismaClient, num: number) => {
+  const question = await db.question.findFirst({
+    where: {
+      num: num
     }
   })
 
@@ -18,28 +30,29 @@ export const getQuestionById = async (db: PrismaClient, qid: number) => {
 
 export const questionRouter = createTRPCRouter({
   getPublic: publicProcedure
-    .input(z.object({ id: z.number() }))
+    .input(z.object({ num: z.number() }))
     .query(async ({ ctx, input }) => {
       const latestQuestion = await getLatestQuestion(ctx.db)
-      if (input.id > latestQuestion.questionNum)
+      const question = await getQuestionByNum(ctx.db, input.num)
+      if (question.num > latestQuestion.num)
         throw new TRPCError({ code: "BAD_REQUEST" })
-      const question = await getQuestionById(ctx.db, input.id)
       return filterQuestionForClientPublic(question)
     }),
   getPrivate: privateProcedure
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }) => {
       const latestQuestion = await getLatestQuestion(ctx.db)
-      if (input.id > latestQuestion.questionNum)
-        throw new TRPCError({ code: "BAD_REQUEST" })
       const question = await getQuestionById(ctx.db, input.id)
+      if (question.num > latestQuestion.num)
+        throw new TRPCError({ code: "BAD_REQUEST" })
       return filterQuestionForClientPrivate(question)
     }),
   start: privateProcedure
     .input(z.object({ questionId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const latestQuestion = await getLatestQuestion(ctx.db)
-      if (input.questionId > latestQuestion.questionNum)
+      const question = await getQuestionById(ctx.db, input.questionId)
+      if (question.num > latestQuestion.num)
         throw new TRPCError({ code: "NOT_FOUND" })
 
       if (await isQuestionAlreadyStartedByUser(ctx.db, ctx.userId, input.questionId))
@@ -77,7 +90,7 @@ export const questionRouter = createTRPCRouter({
         take: limit + 1, // take an extra at end to use as next cursor
         select: {
           id: true,
-          questionNum: true,
+          num: true,
           title: true,
           startsAt: true,
           submissions: {
@@ -91,7 +104,7 @@ export const questionRouter = createTRPCRouter({
         },
         cursor: cursor ? { id: cursor } : undefined,
         orderBy: {
-          questionNum: 'desc',
+          num: 'desc',
         },
       })
       let nextCursor: typeof cursor | undefined = undefined

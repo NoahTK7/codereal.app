@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 import { noRefreshOpts, skipBatchOpts } from "./constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
 import { MetaHeadEmbed } from "@phntms/react-share";
-import { type PublicQuestion } from "~/server/helpers/filter";
+import { type PublicQuestionInfo } from "~/server/helpers/filter";
 
 const Account = () => {
   return (
@@ -94,7 +94,7 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
   return <span>Next question in {`${remainingTime.hours}h ${remainingTime.minutes}m ${remainingTime.seconds}s`}.</span>
 }
 
-export const GlobalStatusContext = createContext<PublicQuestion | undefined>(undefined)
+export const GlobalStatusContext = createContext<PublicQuestionInfo | undefined>(undefined)
 
 export const PageLayout = (props: PropsWithChildren) => {
   const { isSignedIn } = useAuth()

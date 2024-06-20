@@ -22,10 +22,9 @@ export const statusRouter = createTRPCRouter({
     .input(z.object({ id: z.number() }))
     .query(async ({ ctx, input }): Promise<QuestionStatusData> => {
       const latestQuestion = await getLatestQuestion(ctx.db)
-      if (input.id > latestQuestion.questionNum)
-        throw new TRPCError({ code: "BAD_REQUEST" })
-
       const question = await getQuestionById(ctx.db, input.id)
+      if (question.num > latestQuestion.num)
+        throw new TRPCError({ code: "BAD_REQUEST" })
 
       const startEvent = await ctx.db.startEvent.findFirst({
         where: {
@@ -38,7 +37,7 @@ export const statusRouter = createTRPCRouter({
         return {
           isStarted: false,
           isCompleted: false,
-          questionId: question.questionNum,
+          questionId: question.id,
           submissionId: null,
           startTime: null
         } satisfies QuestionStatusData
@@ -59,7 +58,7 @@ export const statusRouter = createTRPCRouter({
         startTime: startEvent.createdAt,
         isCompleted: submission != null,
         submissionId: submission?.id ?? null,
-        questionId: question.questionNum
+        questionId: question.id
       } satisfies QuestionStatusData
     })
 });

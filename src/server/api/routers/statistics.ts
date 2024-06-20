@@ -7,15 +7,14 @@ import { getLatestQuestion } from "./question";
 export const statisticsRouter = createTRPCRouter({
   global: publicProcedure
     .query(async ({ ctx }) => {
-      const currentQuestion = await getLatestQuestion(ctx.db)
+      const latestQuestion = await getLatestQuestion(ctx.db)
       const questionStats = await ctx.db.questionStats.findFirst({
         where: {
-          questionId: currentQuestion.questionNum
+          questionId: latestQuestion.id
         }
       })
 
       return {
-        questionId: currentQuestion.questionNum,
         numAnswered: questionStats?.numSubmissions ?? 0,
         topFive: questionStats?.top5Scores as LeaderboardEntry[] ?? [],
         lastUpdated: new Date()
