@@ -218,7 +218,7 @@ export const PageLayout = (props: PropsWithChildren) => {
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
           <div className="px-4 py-2 font-mono flex justify-center">
             <div className="text-center">
-              {globalState && globalStats ? (
+              {globalState?.todaysQuestion && globalStats ? (
                 <>
                   <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
                   <QuestionCountDown expTimestamp={globalState.todaysQuestion.questionExp} />

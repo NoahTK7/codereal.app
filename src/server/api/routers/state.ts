@@ -31,7 +31,7 @@ const getClientFeatureToggles = async (db: PrismaClient): Promise<ClientFeatureT
   return out
 }
 
-const getServerFeatureToggles = async (db: PrismaClient): Promise<ServerFeatureToggleState> => {
+export const getServerFeatureToggles = async (db: PrismaClient): Promise<ServerFeatureToggleState> => {
   const records = await db.featureToggle.findMany({
     where: {
       type: "SERVER"

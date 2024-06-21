@@ -6,6 +6,6 @@ export const useFeatureToggleState = (key: string) => {
 
   if (!toggleStates) return false
 
-  if (toggleStates[key]) return toggleStates[key]
+  if (toggleStates[key]) return !!toggleStates[key]
   else return false
 }
