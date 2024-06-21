@@ -1,8 +1,11 @@
 import { useContext } from "react";
-import { GlobalStatusContext } from "~/components/layout";
+import { GlobalStateContext } from "~/components/layout";
 import { QuestionHandler } from "~/components/question";
+import { useFeatureToggleState } from "~/components/utils/featureToggle";
+
 
 const Description = () => {
+  const allowMultipleAttempts = useFeatureToggleState("allowMultipleAttempts")
   return (
     <div className="grid grid-cols-1 px-2 py-2 space-y-4">
       <p className="text-2xl font-mono font-bold">Welcome to CodeReal!</p>
@@ -14,23 +17,20 @@ const Description = () => {
         <li>Code length - How many characters your code contains</li>
         <li>Speed - How long your code takes to execute</li>
       </ul>
-      <p>Note: You only get to submit your code once, so make sure you double check your solution!</p>
+      {!allowMultipleAttempts && <p>Note: You only get to submit your code once, so make sure you double check your solution!</p>}
     </div>
   )
 }
 
-
 export default function HomePage() {
-  const globalStatus = useContext(GlobalStatusContext)
-
-  if (!globalStatus) return (<p>Could not connect to backend service. Please refresh the page.</p>)
+  const globalState = useContext(GlobalStateContext)
 
   return (
     <div className="space-y-4">
       <Description />
       <hr />
       <p className="text-xl font-mono font-bold px-2">Today&apos;s Question</p>
-      <QuestionHandler {...globalStatus} />
+      <QuestionHandler {...globalState.todaysQuestion} />
     </div>
   )
 }

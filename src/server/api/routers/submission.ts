@@ -6,6 +6,7 @@ import { getQuestionById } from "./question";
 import { type Question, type PrismaClient, SubmissionResult } from "@prisma/client";
 import { updateQuestionStats, updateUserStats } from "./statistics";
 import { rateLimit } from "~/server/rateLimiter";
+import { getServerFeatureToggles } from "./state";
 
 export const submissionRouter = createTRPCRouter({
   getById: privateProcedure
@@ -35,11 +36,21 @@ export const submissionRouter = createTRPCRouter({
 
       const question = await getQuestionById(ctx.db, input.questionId)
 
-      const execResult = await executeCode(question, input.code)
-      if (execResult.errorMessage) return {
-        error: true,
-        submissionId: -1,
-        execResult
+      const [execResult, featureToggles] = await Promise.all([
+        executeCode(question, input.code),
+        getServerFeatureToggles(ctx.db)
+      ])
+      if (!!featureToggles.allowMultipleAttempts) {
+        if (execResult.errorMessage !== null) return {
+          error: true,
+          submissionId: -1,
+          errorMessage: "Execution error: " + execResult.errorMessage
+        }
+        else if (execResult.accuracy < 1) return {
+          error: true,
+          submissionId: -1,
+          errorMessage: "Incorrect solution"
+        }
       }
 
       const solveTime = await getSolveTime(ctx.db, ctx.userId, input.questionId)

@@ -2,8 +2,8 @@ import { ChevronRightIcon } from "@radix-ui/react-icons";
 import dayjs from "dayjs";
 import Link from "next/link";
 import React from "react";
-import { noRefreshOpts, statusColors } from "~/components/constants";
-import { LoadingSpinner } from "~/components/loading";
+import { noRefreshOpts, statusColors } from "~/components/utils/constants";
+import { LoadingSpinner } from "~/components/utils/loading";
 import { api } from "~/utils/api";
 
 const QuestionList = () => {

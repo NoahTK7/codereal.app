@@ -28,6 +28,14 @@ export const getQuestionByNum = async (db: PrismaClient, num: number) => {
   return question
 }
 
+export type QuestionStatusData = {
+  isStarted: boolean,
+  isCompleted: boolean,
+  questionId: number,
+  submissionId: number | null,
+  startTime: Date | null
+}
+
 export const questionRouter = createTRPCRouter({
   getPublic: publicProcedure
     .input(z.object({ num: z.number() }))
@@ -117,6 +125,49 @@ export const questionRouter = createTRPCRouter({
         nextCursor,
       };
     }),
+  status: privateProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }): Promise<QuestionStatusData> => {
+      const latestQuestion = await getLatestQuestion(ctx.db)
+      const question = await getQuestionById(ctx.db, input.id)
+      if (question.num > latestQuestion.num)
+        throw new TRPCError({ code: "BAD_REQUEST" })
+
+      const startEvent = await ctx.db.startEvent.findFirst({
+        where: {
+          authorId: ctx.userId,
+          questionId: question.id
+        }
+      })
+
+      if (startEvent == null) {
+        return {
+          isStarted: false,
+          isCompleted: false,
+          questionId: question.id,
+          submissionId: null,
+          startTime: null
+        } satisfies QuestionStatusData
+      }
+
+      const submission = await ctx.db.submission.findFirst({
+        where: {
+          authorId: ctx.userId,
+          questionId: question.id
+        },
+        select: {
+          id: true
+        }
+      })
+
+      return {
+        isStarted: true,
+        startTime: startEvent.createdAt,
+        isCompleted: submission != null,
+        submissionId: submission?.id ?? null,
+        questionId: question.id
+      } satisfies QuestionStatusData
+    })
 });
 
 const isQuestionAlreadyStartedByUser = async (db: PrismaClient, userId: string, questionId: number) => {

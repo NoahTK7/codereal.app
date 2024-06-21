@@ -2,7 +2,7 @@ import { type AppType } from "next/app";
 import { api } from "~/utils/api";
 import { ClerkProvider } from "@clerk/nextjs";
 import "~/styles/globals.css";
-import { PageLayout } from "~/components/layout";
+import { GlobalStateProvider } from "~/components/layout";
 import { Toaster } from "react-hot-toast";
 import { SpeedInsights } from '@vercel/speed-insights/next';
 
@@ -12,9 +12,9 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <ClerkProvider {...pageProps}>
       <Toaster position="bottom-center" />
-      <PageLayout>
+      <GlobalStateProvider>
         <Component {...pageProps} />
-      </PageLayout>
+      </GlobalStateProvider>
       <SpeedInsights />
     </ClerkProvider>
   )

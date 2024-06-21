@@ -1,15 +1,17 @@
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Head from "next/head";
 import Link from "next/link";
-import { createContext, type PropsWithChildren } from "react";
+import { createContext, useContext, type PropsWithChildren } from "react";
 import { api, getBaseUrl } from "~/utils/api";
 import { useTimer } from "react-timer-hook";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
-import { noRefreshOpts, skipBatchOpts } from "./constants";
+import { noRefreshOpts, skipBatchOpts } from "./utils/constants";
 import { GlobalLeaderboard, PersonalStats } from "./sidebar";
 import { MetaHeadEmbed } from "@phntms/react-share";
+import { type ClientFeatureToggleState } from "~/server/api/routers/state";
 import { type PublicQuestionInfo } from "~/server/helpers/filter";
+import { LoadingSpinner } from "./utils/loading";
 
 const Account = () => {
   return (
@@ -45,7 +47,7 @@ export const GreenSignInButton = () => {
 }
 
 const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
-  const ctx = api.useUtils()
+  const utils = api.useUtils()
   const router = useRouter()
 
   const displayNewQuestionAvailable = () => {
@@ -74,7 +76,8 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
     })
 
     const loadNewQuestion = async (tId: string) => {
-      await ctx.status.invalidate()
+      await utils.question.status.invalidate()
+      await utils.globalState.getLatestQuestion.invalidate()
       toast.dismiss(tId)
       router.push("/")
     }
@@ -94,20 +97,69 @@ const QuestionCountDown = ({ expTimestamp }: { expTimestamp: Date }) => {
   return <span>Next question in {`${remainingTime.hours}h ${remainingTime.minutes}m ${remainingTime.seconds}s`}.</span>
 }
 
-export const GlobalStatusContext = createContext<PublicQuestionInfo | undefined>(undefined)
+export type GlobalState = {
+  todaysQuestion: PublicQuestionInfo,
+  featureToggles: ClientFeatureToggleState
+}
+export const GlobalStateContext = createContext<GlobalState>({} as GlobalState)
 
-export const PageLayout = (props: PropsWithChildren) => {
-  const { data: globalStatus } = api.status.global.useQuery(undefined, {
+export const GlobalStateProvider = (props: PropsWithChildren) => {
+  const {
+    data: questionState,
+    isLoading: questionStateLoading,
+    isError: isQuestionStateError
+  } = api.globalState.getLatestQuestion.useQuery(undefined, {
     ...noRefreshOpts,
     ...skipBatchOpts
   })
+  const {
+    data: toggleState,
+    isLoading: toggleStateLoading,
+    isError: isToggleStateError
+  } = api.globalState.getFeatureToggles.useQuery(undefined, {
+    ...noRefreshOpts,
+    ...skipBatchOpts
+  })
+
+  if (questionStateLoading || toggleStateLoading) return (
+    <GlobalStateContext.Provider value={{} as GlobalState}>
+      <PageLayout>
+        <div className="flex justify-center"><LoadingSpinner size={48} /></div>
+      </PageLayout>
+    </GlobalStateContext.Provider>
+  )
+
+  if (isQuestionStateError || isToggleStateError) return (
+    <GlobalStateContext.Provider value={{} as GlobalState}>
+      <PageLayout>
+        <p>Could not connect to backend service.Please refresh the page.</p>
+      </PageLayout>
+    </GlobalStateContext.Provider>
+  )
+
+  const globalState: GlobalState = {
+    todaysQuestion: questionState,
+    featureToggles: toggleState
+  }
+
+  return (
+    <GlobalStateContext.Provider value={globalState}>
+      <PageLayout>
+        {props.children}
+      </PageLayout>
+    </GlobalStateContext.Provider>
+  )
+}
+
+export const PageLayout = (props: PropsWithChildren) => {
+  const globalState = useContext(GlobalStateContext)
   const { data: globalStats } = api.statistics.global.useQuery(undefined, {
     ...noRefreshOpts,
     refetchInterval: 1000 * 60 * 5 // 5 minutes
   })
 
   return (
-    <GlobalStatusContext.Provider value={globalStatus}>
+    <>
       <Head>
         <MetaHeadEmbed
           render={(meta: React.ReactNode) => <>{meta}</>}
@@ -166,10 +218,10 @@ export const PageLayout = (props: PropsWithChildren) => {
         <footer className="grid grid-cols-1 divide-y divide-slate-400 bg-slate-200 text-gray-800">
           <div className="px-4 py-2 font-mono flex justify-center">
             <div className="text-center">
-              {globalStatus && globalStats ? (
+              {globalState?.todaysQuestion && globalStats ? (
                 <>
                   <span>{globalStats.numAnswered} people have solved today&apos;s question.  </span>
-                  <QuestionCountDown expTimestamp={globalStatus.questionExp} />
+                  <QuestionCountDown expTimestamp={globalState.todaysQuestion.questionExp} />
                 </>
               )
                 : 'Loading...'}
@@ -187,6 +239,6 @@ export const PageLayout = (props: PropsWithChildren) => {
           </div>
         </footer>
       </div>
-    </GlobalStatusContext.Provider>
+    </>
   )
 }

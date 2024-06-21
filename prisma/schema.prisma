@@ -100,3 +100,16 @@ model RateLimiter {
     points Int
     expire DateTime?
 }
+
+model FeatureToggle {
+    key   String
+    type  FeatureToggleType
+    value Boolean
+
+    @@unique([key, type])
+}
+
+enum FeatureToggleType {
+    CLIENT
+    SERVER
+}
